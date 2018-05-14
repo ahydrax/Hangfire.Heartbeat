@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <ApplicationIcon />
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <StartupObject />
-    <Version>0.0.5</Version>
+    <PackageId>Hangfire.Heartbeat</PackageId>
+    <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicenseUrl>
+    <Version>0.0.6</Version>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Viktor Svyatokha (ahydrax)</Authors>
     <Description>Server monitoring plugin for Hangfire.</Description>
-    <PackageTags>Hangfire, monitoring, heartbeat</PackageTags>
-    <PackageReleaseNotes />
+    <PackageTags>Hangfire;monitoring;heartbeat</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
