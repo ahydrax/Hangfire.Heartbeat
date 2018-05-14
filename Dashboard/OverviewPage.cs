@@ -28,24 +28,35 @@ namespace Hangfire.Heartbeat.Dashboard
             WriteLiteralLine("<tbody>");
             foreach (var server in servers)
             {
+                var name = server.Name.Replace(':','-');
+
                 try
                 {
                     var keys = Storage.GetConnection().GetAllEntriesFromHash(server.Name);
 
-                    WriteLiteral("<tr>");
+                    WriteLiteral($"<tr>");
                     WriteLiteral($"<td>{server.Name}<td/>");
-                    WriteLiteral($"<td>{keys?[SystemMonitor.CpuUsage] ?? "N/A"}<td/>");
-                    WriteLiteral($"<td>{keys?[SystemMonitor.Allocated] ?? "N/A"}<td/>");
+                    WriteLiteral($"<td id='cpu-{name}'>{keys?[SystemMonitor.CpuUsage] ?? "N/A"}<td/>");
+                    WriteLiteral($"<td id='mem-{name}'>{keys?[SystemMonitor.Allocated] ?? "N/A"}<td/>");
                     WriteLiteralLine("<tr/>");
                 }
                 catch
                 {
                 }
-                
+
             }
             WriteLiteralLine("<tbody/>");
             WriteLiteralLine("<table />");
 
+            WriteLiteralLine("<script language='javascript'>");
+            var script = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.js.numeral.min.js");
+            WriteLiteralLine(script);
+            WriteLiteralLine("</script>");
+
+            WriteLiteralLine("<script language='javascript'>");
+            script = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.js.OverviewPage.js");
+            WriteLiteralLine(script);
+            WriteLiteralLine("</script>");
         }
 
         private void WriteLiteralLine(string textToAppend)

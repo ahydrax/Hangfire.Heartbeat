@@ -14,6 +14,7 @@ namespace Hangfire.Heartbeat
             {
                 Active = page.RequestPath.StartsWith(OverviewPage.UrlRoute)
             });
+            DashboardRoutes.Routes.Add(OverviewPage.UrlRoute + "/stats", new JsonDispatcher());
             return config;
         }
     }

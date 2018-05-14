@@ -7,13 +7,24 @@
     <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicenseUrl>
-    <Version>0.0.7</Version>
+    <Version>0.0.8</Version>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Viktor Svyatokha (ahydrax)</Authors>
     <Description>Server monitoring plugin for Hangfire.</Description>
     <PackageTags>Hangfire;monitoring;heartbeat</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Dashboard\js\numeral.min.js" />
+    <None Remove="Dashboard\js\OverviewPage.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\js\numeral.min.js" />
+    <EmbeddedResource Include="Dashboard\js\OverviewPage.js" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HangFire.Core" Version="1.6.19" />
