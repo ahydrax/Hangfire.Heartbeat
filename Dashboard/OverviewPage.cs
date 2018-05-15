@@ -14,39 +14,9 @@ namespace Hangfire.Heartbeat.Dashboard
             WriteEmptyLine();
             Layout = new LayoutPage(Title);
 
-            var servers = Storage.GetMonitoringApi().Servers();
+            var html = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.html.OverviewPage.html");
 
-            WriteLiteralLine("<table class='table'>");
-            WriteLiteralLine("<thead>");
-            WriteLiteralLine("<tr>");
-            WriteLiteralLine("<th>Name<th/>");
-            WriteLiteralLine("<th>CPU<th/>");
-            WriteLiteralLine("<th>Working memory set<th/>");
-            WriteLiteralLine("<tr/>");
-            WriteLiteralLine("<thead/>");
-
-            WriteLiteralLine("<tbody>");
-            foreach (var server in servers)
-            {
-                var name = server.Name.Replace(':','-');
-
-                try
-                {
-                    var keys = Storage.GetConnection().GetAllEntriesFromHash(server.Name);
-
-                    WriteLiteral($"<tr>");
-                    WriteLiteral($"<td>{server.Name}<td/>");
-                    WriteLiteral($"<td id='cpu-{name}'>{keys?[SystemMonitor.CpuUsage] ?? "N/A"}<td/>");
-                    WriteLiteral($"<td id='mem-{name}'>{keys?[SystemMonitor.Allocated] ?? "N/A"}<td/>");
-                    WriteLiteralLine("<tr/>");
-                }
-                catch
-                {
-                }
-
-            }
-            WriteLiteralLine("<tbody/>");
-            WriteLiteralLine("<table />");
+            WriteLiteralLine(html);
 
             WriteLiteralLine("<script language='javascript'>");
             var script = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.js.numeral.min.js");

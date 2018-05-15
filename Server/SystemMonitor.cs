@@ -66,22 +66,5 @@ namespace Hangfire.Heartbeat.Server
                 transaction.Commit();
             }
         }
-
-        private static string FormatCpuUsage(double ratio) => $"{ratio:0.00}%";
-
-        private static readonly string[] Sizes = { "B", "KB", "MB", "GB", "TB" };
-
-        private string FormatAllocated(long allocated)
-        {
-            double size = allocated;
-            int order = 0;
-            while (size >= 1024 && order < Sizes.Length - 1)
-            {
-                order++;
-                size = size / 1024;
-            }
-
-            return $"{size:0.00} {Sizes[order]}";
-        }
     }
 }

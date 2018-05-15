@@ -17,11 +17,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Dashboard\html\OverviewPage.html" />
     <None Remove="Dashboard\js\numeral.min.js" />
     <None Remove="Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Dashboard\html\OverviewPage.html" />
     <EmbeddedResource Include="Dashboard\js\numeral.min.js" />
     <EmbeddedResource Include="Dashboard\js\OverviewPage.js" />
   </ItemGroup>
