@@ -1,23 +1,24 @@
-﻿var createGraph = function (elementName) {
+﻿var format = function() { return ""; }
+
+var createGraph = function (elementName) {
     var graph = new Rickshaw.Graph({
         element: document.getElementById(elementName),
         height: 400,
         renderer: 'area',
         interpolation: 'cardinal',
         unstack: true,
-        series: new Rickshaw.Series.FixedDuration([], undefined, {
-            timeInterval: 30000,
-            maxDataPoints: 200,
-            timeBase: new Date().getTime() / 1000
+        series: new Rickshaw.Series.FixedDuration([{ name: "stub" }], undefined, {
+            timeInterval: 3000,
+            maxDataPoints: 20,
+            timeBase: new Date().getTime() / 60000
         })
     });
 
     var ticksTreatment = 'glow';
-    var time = new Rickshaw.Fixtures.Time();
-    var timeUnit = time.unit('seconds');
     var xAxis = new Rickshaw.Graph.Axis.Time({
         graph: graph,
-        timeUnit: timeUnit
+        ticksTreatment: ticksTreatment,
+        timeFixture: new Rickshaw.Fixtures.Time.Local()
     });
 
     xAxis.render();
@@ -33,40 +34,9 @@
     return graph;
 }
 
-var createLegend = function (elementName, graph) {
-    $('#' + elementName).empty();
-    var legend = new Rickshaw.Graph.Legend({
-        graph: graph,
-        element: document.getElementById(elementName)
-    });
-    var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
-        graph: graph,
-        legend: legend
-    });
-    var highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
-        graph: graph,
-        legend: legend
-    });
-    return legend;
-}
-
 window.onload = function () {
-    var palette = new Rickshaw.Color.Palette({ scheme: 'cool' });
-
     var cpuGraph = createGraph("cpu-chart");
     var memGraph = createGraph("mem-chart");
-
-    var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
-        graph: cpuGraph,
-        xFormatter: function (x) { return x; },
-        yFormatter: function (y) { return numeral(y).format('0.00') + '%' }
-    });
-
-    var memHoverDetail = new Rickshaw.Graph.HoverDetail({
-        graph: memGraph,
-        xFormatter: function (x) { return x; },
-        yFormatter: function (y) { return numeral(y).format('0.00b') }
-    });
 
     var updater = function () {
         $.get(document.URL + '/stats',
@@ -108,5 +78,5 @@ window.onload = function () {
     };
 
     updater();
-    setInterval(updater, 2000);
+    setInterval(updater, 3000);
 }
