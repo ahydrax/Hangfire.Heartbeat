@@ -38,6 +38,28 @@ window.onload = function () {
     var cpuGraph = createGraph("cpu-chart");
     var memGraph = createGraph("mem-chart");
 
+
+    var cpuHoverDetail = new Rickshaw.Graph.HoverDetail( {
+        graph: cpuGraph,
+        formatter: function(series, x, y) {
+            var date = '<span class="date">' + new Date(x * 1000).toUTCString() + '</span>';
+            var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
+            var content = swatch + series.name + ": " + numeral(y).format('0.00') + '%' + '<br>' + date;
+            return content;
+        }
+    } );
+
+    var memHoverDetail = new Rickshaw.Graph.HoverDetail( {
+        graph: memGraph,
+        formatter: function(series, x, y) {
+            var date = '<span class="date">' + new Date(x * 1000).toUTCString() + '</span>';
+            var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
+            var content = swatch + series.name + ": " + numeral(y).format('0.00b') + '<br>' + date;
+            return content;
+        }
+    } );
+
+
     var updater = function () {
         $.get(document.URL + '/stats',
             function (data) {
