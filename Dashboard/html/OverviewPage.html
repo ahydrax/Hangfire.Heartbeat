@@ -1,4 +1,9 @@
-﻿<div class="col-md-12">
+﻿<link rel="stylesheet" type="text/css" href="heartbeat/styles.css" />
+<script type="text/javascript" src="heartbeat/knockout-3.4.2.js"></script>
+<script type="text/javascript" src="heartbeat/numeral.min.js"></script>
+<script type="text/javascript" src="heartbeat/OverviewPage.js"></script>
+
+<div class="col-md-12">
     <div class="row">
         <div class="col-md-6">
             <h3>CPU</h3>
@@ -10,20 +15,29 @@
         </div>
     </div>
     <div class="row">
-        <div id="cpu-legend"></div>
-    </div>
-    <div class="row">
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th style="width: 16px"></th>
+                        <th>Server</th>
+                        <th>PID</th>
+                        <th>Exec name</th>
                         <th>CPU</th>
-                        <th>Working memory set</th>
+                        <th>RAM</th>
                     </tr>
                 </thead>
 
-                <tbody id="overview-table"></tbody>
+                <tbody data-bind="foreach: servers">
+                    <tr>
+                        <td><div data-bind="style: { 'border-color': serverColor}" class="server-indicator"></div></td>
+                        <td data-bind="text: serverName"></td>
+                        <td data-bind="text: processId"></td>
+                        <td data-bind="text: processName"></td>
+                        <td data-bind="text: cpuUsage"></td>
+                        <td data-bind="text: ramUsage"></td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </div>

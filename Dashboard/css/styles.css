@@ -1,0 +1,10 @@
+﻿.server-indicator {
+    border: solid 8px;
+    width: 16px;
+    vertical-align: middle;
+}
+
+g .area {
+    fill-opacity: 0.5;
+    stroke-width: 3px;
+}

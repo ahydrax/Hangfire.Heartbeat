@@ -1,12 +1,15 @@
-﻿var format = function() { return ""; }
+﻿"use strict";
 
-var createGraph = function (elementName) {
+var format = function () { return ""; }
+
+var createGraph = function (elementName, yAxisConfig) {
     var graph = new Rickshaw.Graph({
         element: document.getElementById(elementName),
         height: 400,
         renderer: 'area',
         interpolation: 'cardinal',
         unstack: true,
+        stroke: true,
         series: new Rickshaw.Series.FixedDuration([{ name: "stub" }], undefined, {
             timeInterval: 3000,
             maxDataPoints: 20,
@@ -14,81 +17,107 @@ var createGraph = function (elementName) {
         })
     });
 
-    var ticksTreatment = 'glow';
     var xAxis = new Rickshaw.Graph.Axis.Time({
         graph: graph,
-        ticksTreatment: ticksTreatment,
+        ticksTreatment: 'glow',
         timeFixture: new Rickshaw.Fixtures.Time.Local()
     });
 
     xAxis.render();
 
-    var yAxis = new Rickshaw.Graph.Axis.Y({
-        graph: graph,
-        tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        ticksTreatment: ticksTreatment
-    });
+    var yAxis = yAxisConfig(graph);
 
     yAxis.render();
 
     return graph;
 }
 
+
+var UtilizationViewModel = function () {
+    var self = this;
+
+    self.servers = ko.observableArray();
+};
+
+var viewModel = new UtilizationViewModel();
+
 window.onload = function () {
-    var cpuGraph = createGraph("cpu-chart");
-    var memGraph = createGraph("mem-chart");
 
+    var cpuGraph = createGraph("cpu-chart", function (graph) {
+        return new Rickshaw.Graph.Axis.Y({
+            graph: graph,
+            tickFormat: function (y) { return y !== 0 ? y + '%' : '' },
+            ticksTreatment: 'glow',
+            min: 0,
+            max: 100
+        });
+    });
 
-    var cpuHoverDetail = new Rickshaw.Graph.HoverDetail( {
+    var memGraph = createGraph("mem-chart", function (graph) {
+        return new Rickshaw.Graph.Axis.Y({
+            graph: graph,
+            tickFormat: function (y) { return y !== 0 ? numeral(y).format('0.0b') : ''; },
+            ticksTreatment: 'glow'
+        });
+    });
+
+    var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: cpuGraph,
-        formatter: function(series, x, y) {
-            var date = '<span class="date">' + new Date(x * 1000).toUTCString() + '</span>';
+        formatter: function (series, x, y) {
+            var date = '<span class="date">' + moment.unix(x) + '</span>';
             var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
             var content = swatch + series.name + ": " + numeral(y).format('0.00') + '%' + '<br>' + date;
             return content;
         }
-    } );
+    });
 
-    var memHoverDetail = new Rickshaw.Graph.HoverDetail( {
+    var memHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: memGraph,
-        formatter: function(series, x, y) {
-            var date = '<span class="date">' + new Date(x * 1000).toUTCString() + '</span>';
+        formatter: function (series, x, y) {
+            var date = '<span class="date">' + moment.unix(x)+ '</span>';
             var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
             var content = swatch + series.name + ": " + numeral(y).format('0.00b') + '<br>' + date;
             return content;
         }
-    } );
-
+    });
 
     var updater = function () {
         $.get(document.URL + '/stats',
             function (data) {
-
                 var cpuGraphData = {};
                 var memGraphData = {};
+
                 for (var i = 0; i < data.length; i++) {
                     var current = data[i];
 
-                    var formattedCpuUsage = numeral(current.cpuUsagePercentage).format('0.00') + '%';
-                    var formattedWorkingMemorySet = numeral(current.workingMemorySet).format('0.00b');
+                    var server = ko.utils.arrayFirst(viewModel.servers(), function (s) { return s.serverFullName === current.serverFullName; });
 
-                    if ($('#' + current.name).length) {
+                    if (server == null) {
+                        server = {
+                            serverColor: ko.observable("#000000"),
+                            serverName: current.serverName,
+                            serverFullName: current.serverFullName,
+                            processId: ko.observable(current.processId),
+                            processName: ko.observable(current.processName),
+                            cpuUsage: ko.observable(current.cpuUsagePercentage + '%'),
+                            ramUsage: ko.observable(numeral(current.workingMemorySet).format('0.00b'))
+                        };
 
-                        $('#cpu-' + current.name).text(formattedCpuUsage);
-                        $('#mem-' + current.name).text(formattedWorkingMemorySet);
+                        viewModel.servers.push(server);
                     } else {
-                        $('#overview-table').append("<tr id='" + current.name + "'>" +
-                            "<td>" + current.name + "</td>" +
-                            "<td id='cpu-" + current.name + "'></td>" +
-                            "<td id='mem-" + current.name + "'></td>" +
-                            "</tr>");
-
-                        $('#cpu-' + current.name).text(formattedCpuUsage);
-                        $('#mem-' + current.name).text(formattedWorkingMemorySet);
+                        server.processId(current.processId);
+                        server.processName(current.processName);
+                        server.cpuUsage(current.cpuUsagePercentage + '%');
+                        server.ramUsage(numeral(current.workingMemorySet).format('0.00b'));
                     }
 
-                    cpuGraphData[current.name] = current.cpuUsagePercentage;
-                    memGraphData[current.name] = current.workingMemorySet;
+                    cpuGraphData[current.serverFullName] = current.cpuUsagePercentage;
+                    memGraphData[current.serverFullName] = current.workingMemorySet;
+
+                    var series = ko.utils.arrayFirst(cpuGraph.series, function (s) { return s.name === server.serverFullName });
+                    if (series != null) {
+                        server.serverColor(series.color);
+                    }
                 }
 
                 cpuGraph.series.addData(cpuGraphData);
@@ -101,4 +130,5 @@ window.onload = function () {
 
     updater();
     setInterval(updater, 3000);
+    ko.applyBindings(viewModel);
 }

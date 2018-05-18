@@ -6,15 +6,13 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
+using static Hangfire.Heartbeat.Strings;
 
 namespace Hangfire.Heartbeat.Server
 {
     [UsedImplicitly]
     public sealed class SystemMonitor : IBackgroundProcess
     {
-        public const string Allocated = "Allocated";
-        public const string CpuUsage = "CpuUsage";
-
         private readonly Process _currentProcess;
         private readonly TimeSpan _checkInterval;
         private readonly int _processorCount;
@@ -22,41 +20,57 @@ namespace Hangfire.Heartbeat.Server
         public SystemMonitor()
         {
             _currentProcess = Process.GetCurrentProcess();
-            _checkInterval = TimeSpan.FromSeconds(3);
+            _checkInterval = TimeSpan.FromSeconds(2);
             _processorCount = Environment.ProcessorCount;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
             var connection = context.Storage.GetConnection();
-            if (context.CancellationToken.IsCancellationRequested)
+            if (context.IsShutdownRequested)
             {
                 CleanupState(context, connection);
             }
 
-            var previousProcessorTime = _currentProcess.TotalProcessorTime;
-            Thread.Sleep(1000);
-            _currentProcess.Refresh();
-            var currentProcessorTime = _currentProcess.TotalProcessorTime;
+            var cpuPercentUsage = ComputeCpuUsage();
 
-            var allocatedBytes = _currentProcess.WorkingSet64;
-
-            var cpuPercentUsage = CalculateCpuPercentUsage(currentProcessorTime, previousProcessorTime);
-
-            var cpuUsageString = cpuPercentUsage.ToString(CultureInfo.InvariantCulture);
-            var allocatedString = allocatedBytes.ToString(CultureInfo.InvariantCulture);
-
-            connection.SetRangeInHash(context.ServerId, new[]
+            using (var writeTransaction = connection.CreateWriteTransaction())
             {
-                new KeyValuePair<string, string>(Allocated, allocatedString),
-                new KeyValuePair<string, string>(CpuUsage, cpuUsageString)
-            });
+                var key = Utils.FormatKey(context.ServerId);
+
+                var values = new Dictionary<string, string>
+                {
+                    [ProcessId] = _currentProcess.Id.ToString(CultureInfo.InvariantCulture),
+                    [ProcessName] = _currentProcess.ProcessName,
+                    [CpuUsage] = cpuPercentUsage.ToString(CultureInfo.InvariantCulture),
+                    [WorkingSet] = _currentProcess.WorkingSet64.ToString(CultureInfo.InvariantCulture)
+                };
+
+                writeTransaction.SetRangeInHash(key, values);
+
+                // if storage supports manual expiration handling
+                if (writeTransaction is JobStorageTransaction jsTransaction)
+                {
+                    jsTransaction.ExpireHash(key, TimeSpan.FromMinutes(5));
+                }
+
+                writeTransaction.Commit();
+            }
 
             context.Wait(_checkInterval);
         }
 
-        private double CalculateCpuPercentUsage(TimeSpan currentProcessorTime, TimeSpan previousProcessorTime)
-            => (currentProcessorTime - previousProcessorTime).TotalMilliseconds / (_processorCount * 10.0);
+        private int ComputeCpuUsage()
+        {
+            var current = _currentProcess.TotalProcessorTime;
+            Thread.Sleep(1000);
+            _currentProcess.Refresh();
+            var next = _currentProcess.TotalProcessorTime;
+
+            var totalMilliseconds = (int)(next - current).TotalMilliseconds;
+            var cpuPercentUsage = totalMilliseconds / (_processorCount * 10);
+            return cpuPercentUsage;
+        }
 
         private static void CleanupState(BackgroundProcessContext context, IStorageConnection connection)
         {
