@@ -17,10 +17,13 @@ var createGraph = function (elementName, yAxisConfig) {
         })
     });
 
-    var xAxis = new Rickshaw.Graph.Axis.Time({
+    var xAxis = new Rickshaw.Graph.Axis.X({
         graph: graph,
         ticksTreatment: 'glow',
-        timeFixture: new Rickshaw.Fixtures.Time.Local()
+        ticks: 10,
+        tickFormat: function (x) {
+            return "";
+        }
     });
 
     xAxis.render();
@@ -31,7 +34,6 @@ var createGraph = function (elementName, yAxisConfig) {
 
     return graph;
 }
-
 
 var UtilizationViewModel = function () {
     var self = this;
@@ -47,16 +49,14 @@ window.onload = function () {
         return new Rickshaw.Graph.Axis.Y({
             graph: graph,
             tickFormat: function (y) { return y !== 0 ? y + '%' : '' },
-            ticksTreatment: 'glow',
-            min: 0,
-            max: 100
+            ticksTreatment: 'glow'
         });
     });
 
     var memGraph = createGraph("mem-chart", function (graph) {
         return new Rickshaw.Graph.Axis.Y({
             graph: graph,
-            tickFormat: function (y) { return y !== 0 ? numeral(y).format('0.0b') : ''; },
+            tickFormat: function (y) { return y !== 0 ? numeral(y).format('0b') : ''; },
             ticksTreatment: 'glow'
         });
     });
@@ -74,7 +74,7 @@ window.onload = function () {
     var memHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: memGraph,
         formatter: function (series, x, y) {
-            var date = '<span class="date">' + moment.unix(x)+ '</span>';
+            var date = '<span class="date">' + moment.unix(x) + '</span>';
             var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
             var content = swatch + series.name + ": " + numeral(y).format('0.00b') + '<br>' + date;
             return content;

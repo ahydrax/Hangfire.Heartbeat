@@ -8,19 +8,21 @@ namespace Hangfire.Heartbeat.Dashboard
     internal class ContentDispatcher : IDashboardDispatcher
     {
         private static readonly Assembly ThisAssembly = typeof(ContentDispatcher).Assembly;
-        private readonly string _resourceName;
         private readonly string _contentType;
+        private readonly string _resourceName;
+        private readonly TimeSpan _expiresIn;
 
-        public ContentDispatcher(string contentType, string resourceName)
+        public ContentDispatcher(string contentType, string resourceName, TimeSpan expiresIn)
         {
-            _resourceName = resourceName;
             _contentType = contentType;
+            _resourceName = resourceName;
+            _expiresIn = expiresIn;
         }
 
         public async Task Dispatch(DashboardContext context)
         {
             context.Response.ContentType = _contentType;
-            context.Response.SetExpire(DateTimeOffset.Now.AddYears(1));
+            context.Response.SetExpire(DateTimeOffset.UtcNow + _expiresIn);
 
             await WriteResourceAsync(context);
         }
