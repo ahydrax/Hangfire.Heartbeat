@@ -5,7 +5,7 @@ using Hangfire.Dashboard;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using static Hangfire.Heartbeat.Strings;
+using static Hangfire.Heartbeat.Constants;
 
 namespace Hangfire.Heartbeat.Dashboard
 {

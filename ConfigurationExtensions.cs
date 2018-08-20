@@ -8,9 +8,9 @@ namespace Hangfire.Heartbeat
     public static class ConfigurationExtensions
     {
         [PublicAPI]
-        public static IGlobalConfiguration UseHeartbeatPage(this IGlobalConfiguration config)
+        public static IGlobalConfiguration UseHeartbeatPage(this IGlobalConfiguration config, TimeSpan checkInterval)
         {
-            DashboardRoutes.Routes.AddRazorPage(OverviewPage.PageRoute, x => new OverviewPage());
+            DashboardRoutes.Routes.AddRazorPage(OverviewPage.PageRoute, x => new OverviewPage(checkInterval));
             NavigationMenu.Items.Add(page => new MenuItem(OverviewPage.Title, page.Url.To(OverviewPage.PageRoute))
             {
                 Active = page.RequestPath.StartsWith(OverviewPage.PageRoute)

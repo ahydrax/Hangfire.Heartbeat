@@ -6,12 +6,11 @@ var UtilizationViewModel = function () {
     var self = this;
     self.servers = ko.observableArray();
 };
-
 var viewModel = new UtilizationViewModel();
 
 // UPDATER
 var updater = function (cpuGraph, memGraph) {
-    $.get(document.URL + '/stats',
+    $.get($("#heartbeatConfig").data("pollurl"),
         function (data) {
             var newServerViews = [];
 
@@ -77,7 +76,7 @@ var createGraph = function (elementName, yAxisConfig) {
         interpolation: 'cardinal',
         unstack: true,
         stroke: true,
-        series: new Rickshaw.Series.FixedDuration([{ name: "stub" }],
+        series: new Rickshaw.Series.FixedDuration([{ name: "__STUB" }],
             "cool",
             {
                 timeInterval: 1000,
@@ -98,6 +97,10 @@ var createGraph = function (elementName, yAxisConfig) {
     yAxis.render();
 
     return graph;
+};
+
+var formatDate = function (unixSeconds) {
+    return moment(unixSeconds * 1000).format("H:mm:ss");
 };
 
 // INITIALIZATION
@@ -124,7 +127,9 @@ window.onload = function () {
     var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: cpuGraph,
         formatter: function (series, x, y) {
-            var date = '<span class="date">' + moment(x * 1000).format() + '</span>';
+            var date = '<span class="date">' + formatDate(x) + '</span>';
+            if (series.name === "__STUB") return date;
+
             var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
             var content = swatch + series.name + ": " + numeral(y).format('0.00') + '%' + '<br>' + date;
             return content;
@@ -134,7 +139,9 @@ window.onload = function () {
     var memHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: memGraph,
         formatter: function (series, x, y) {
-            var date = '<span class="date">' + moment(x * 1000).format() + '</span>';
+            var date = '<span class="date">' + formatDate(x) + '</span>';
+            if (series.name === "__STUB") return date;
+
             var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
             var content = swatch + series.name + ": " + numeral(y).format('0.00b') + '<br>' + date;
             return content;
@@ -142,6 +149,6 @@ window.onload = function () {
     });
 
     updater(cpuGraph, memGraph);
-    setInterval(function () { updater(cpuGraph, memGraph); }, $("#hangfireConfig").data("pollinterval"));
+    setInterval(function () { updater(cpuGraph, memGraph); }, $("#heartbeatConfig").data("pollinterval"));
     ko.applyBindings(viewModel);
 };

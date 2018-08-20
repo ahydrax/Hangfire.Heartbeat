@@ -6,7 +6,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
-using static Hangfire.Heartbeat.Strings;
+using static Hangfire.Heartbeat.Constants;
 
 namespace Hangfire.Heartbeat.Server
 {
@@ -16,11 +16,13 @@ namespace Hangfire.Heartbeat.Server
         private readonly Process _currentProcess;
         private readonly TimeSpan _checkInterval;
         private readonly int _processorCount;
+        private readonly TimeSpan _expireIn;
 
-        public SystemMonitor()
+        public SystemMonitor(TimeSpan checkInterval)
         {
             _currentProcess = Process.GetCurrentProcess();
-            _checkInterval = TimeSpan.Zero;
+            _checkInterval = checkInterval;
+            _expireIn = _checkInterval + TimeSpan.FromMinutes(1);
             _processorCount = Environment.ProcessorCount;
         }
 
@@ -52,7 +54,7 @@ namespace Hangfire.Heartbeat.Server
                 // if storage supports manual expiration handling
                 if (writeTransaction is JobStorageTransaction jsTransaction)
                 {
-                    jsTransaction.ExpireHash(key, TimeSpan.FromMinutes(1));
+                    jsTransaction.ExpireHash(key, _expireIn);
                 }
 
                 writeTransaction.Commit();
@@ -67,7 +69,7 @@ namespace Hangfire.Heartbeat.Server
         private int ComputeCpuUsage()
         {
             var current = _currentProcess.TotalProcessorTime;
-            Thread.Sleep(1000);
+            Thread.Sleep(WaitMilliseconds);
             _currentProcess.Refresh();
             var next = _currentProcess.TotalProcessorTime;
 
