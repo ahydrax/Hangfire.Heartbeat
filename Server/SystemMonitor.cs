@@ -10,7 +10,7 @@ using static Hangfire.Heartbeat.Strings;
 
 namespace Hangfire.Heartbeat.Server
 {
-    [UsedImplicitly]
+    [PublicAPI]
     public sealed class SystemMonitor : IBackgroundProcess
     {
         private readonly Process _currentProcess;
@@ -20,7 +20,7 @@ namespace Hangfire.Heartbeat.Server
         public SystemMonitor()
         {
             _currentProcess = Process.GetCurrentProcess();
-            _checkInterval = TimeSpan.FromSeconds(2);
+            _checkInterval = TimeSpan.Zero;
             _processorCount = Environment.ProcessorCount;
         }
 
@@ -52,13 +52,16 @@ namespace Hangfire.Heartbeat.Server
                 // if storage supports manual expiration handling
                 if (writeTransaction is JobStorageTransaction jsTransaction)
                 {
-                    jsTransaction.ExpireHash(key, TimeSpan.FromMinutes(5));
+                    jsTransaction.ExpireHash(key, TimeSpan.FromMinutes(1));
                 }
 
                 writeTransaction.Commit();
             }
 
-            context.Wait(_checkInterval);
+            if (_checkInterval != TimeSpan.Zero)
+            {
+                context.Wait(_checkInterval);
+            }
         }
 
         private int ComputeCpuUsage()

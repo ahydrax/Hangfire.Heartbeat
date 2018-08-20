@@ -1,9 +1,7 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
-using Hangfire.Storage.Monitoring;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -21,35 +19,37 @@ namespace Hangfire.Heartbeat.Dashboard
 
         public async Task Dispatch(DashboardContext context)
         {
-            var servers = context.Storage.GetMonitoringApi().Servers().Select(x => MapServerStatsToView(context, x)).ToArray();
+            var servers = context.Storage.GetMonitoringApi().Servers();
+            var serverUtilizationViews = new List<ServerView>(servers.Count);
+            using (var connection = context.Storage.GetConnection())
+            {
+                foreach (var serverDto in servers)
+                {
+                    var key = Utils.FormatKey(serverDto.Name);
+                    var hash = connection.GetAllEntriesFromHash(key);
+                    var view = new ServerView
+                    {
+                        ServerName = FormatServerName(serverDto.Name),
+                        ServerFullName = serverDto.Name,
+                        ProcessId = hash?[ProcessId],
+                        ProcessName = hash?[ProcessName],
+                        CpuUsagePercentage = ParseInt(hash?[CpuUsage]),
+                        WorkingMemorySet = ParseLong(hash?[WorkingSet]),
+                        Timestamp = ParseLong(hash?[Timestamp])
+                    };
+                    serverUtilizationViews.Add(view);
+                }
+            }
 
             context.Response.ContentType = "application/json";
-            var serialized = JsonConvert.SerializeObject(servers, JsonSerializerSettings);
+            var serialized = JsonConvert.SerializeObject(serverUtilizationViews, JsonSerializerSettings);
             await context.Response.WriteAsync(serialized);
-        }
-
-        private static ServerView MapServerStatsToView(DashboardContext context, ServerDto x)
-        {
-            var stats = context.Storage.GetConnection().GetAllEntriesFromHash(Utils.FormatKey(x.Name));
-
-            var view = new ServerView
-            {
-                ServerName = FormatServerName(x.Name),
-                ServerFullName = x.Name,
-                ProcessId = stats?[ProcessId],
-                ProcessName = stats?[ProcessName],
-                CpuUsagePercentage = ParseInt(stats?[CpuUsage]),
-                WorkingMemorySet = ParseLong(stats?[WorkingSet]),
-                Timestamp = ParseLong(stats?[Timestamp])
-            };
-
-            return view;
         }
 
         private static string FormatServerName(string name)
         {
             var lastIndex = name.LastIndexOf(':');
-            return name.Substring(0, lastIndex);
+            return lastIndex > 0 ? name.Substring(0, lastIndex) : name;
         }
 
         private static int ParseInt(string s)
