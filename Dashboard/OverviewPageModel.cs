@@ -1,4 +1,5 @@
-﻿using Hangfire.Annotations;
+﻿using System;
+using Hangfire.Annotations;
 
 namespace Hangfire.Heartbeat.Dashboard
 {
@@ -11,5 +12,6 @@ namespace Hangfire.Heartbeat.Dashboard
         public string ProcessName { get; set; }
         public int CpuUsagePercentage { get; set; }
         public long WorkingMemorySet { get; set; }
+        public long Timestamp { get; set; }
     }
 }

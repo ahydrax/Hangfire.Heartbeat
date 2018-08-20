@@ -43,7 +43,8 @@ namespace Hangfire.Heartbeat.Server
                     [ProcessId] = _currentProcess.Id.ToString(CultureInfo.InvariantCulture),
                     [ProcessName] = _currentProcess.ProcessName,
                     [CpuUsage] = cpuPercentUsage.ToString(CultureInfo.InvariantCulture),
-                    [WorkingSet] = _currentProcess.WorkingSet64.ToString(CultureInfo.InvariantCulture)
+                    [WorkingSet] = _currentProcess.WorkingSet64.ToString(CultureInfo.InvariantCulture),
+                    [Timestamp] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
                 };
 
                 writeTransaction.SetRangeInHash(key, values);

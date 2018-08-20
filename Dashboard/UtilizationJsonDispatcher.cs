@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
@@ -38,7 +39,8 @@ namespace Hangfire.Heartbeat.Dashboard
                 ProcessId = stats?[ProcessId],
                 ProcessName = stats?[ProcessName],
                 CpuUsagePercentage = ParseInt(stats?[CpuUsage]),
-                WorkingMemorySet = ParseLong(stats?[WorkingSet])
+                WorkingMemorySet = ParseLong(stats?[WorkingSet]),
+                Timestamp = ParseLong(stats?[Timestamp])
             };
 
             return view;
@@ -52,13 +54,13 @@ namespace Hangfire.Heartbeat.Dashboard
 
         private static int ParseInt(string s)
         {
-            int.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var i);
+            int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i);
             return i;
         }
 
         private static long ParseLong(string s)
         {
-            long.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var i);
+            long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i);
             return i;
         }
     }
