@@ -28,10 +28,10 @@
                     </tr>
                 </thead>
 
-                <tbody data-bind="foreach: servers">
+                <tbody data-bind="foreach: servers.sort(function (l, r) { return (l.name == r.name) ? 0 : (l.name > r.name ? -1 : 1) })">
                     <tr>
-                        <td><div data-bind="style: { 'border-color': serverColor}" class="server-indicator"></div></td>
-                        <td data-bind="text: serverName"></td>
+                        <td><div data-bind="style: { 'border-color': displayColor }" class="server-indicator"></div></td>
+                        <td data-bind="text: displayName"></td>
                         <td data-bind="text: processId"></td>
                         <td data-bind="text: processName"></td>
                         <td data-bind="text: cpuUsage"></td>

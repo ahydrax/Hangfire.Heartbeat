@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
@@ -29,8 +30,8 @@ namespace Hangfire.Heartbeat.Dashboard
                     var hash = connection.GetAllEntriesFromHash(key);
                     var view = new ServerView
                     {
-                        ServerName = FormatServerName(serverDto.Name),
-                        ServerFullName = serverDto.Name,
+                        DisplayName = FormatServerName(serverDto.Name),
+                        Name = serverDto.Name,
                         ProcessId = hash?[ProcessId],
                         ProcessName = hash?[ProcessName],
                         CpuUsagePercentage = ParseInt(hash?[CpuUsage]),

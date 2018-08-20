@@ -12,58 +12,30 @@ var viewModel = new UtilizationViewModel();
 var updater = function (cpuGraph, memGraph) {
     $.get($("#heartbeatConfig").data("pollurl"),
         function (data) {
+            var cpuGraphData = {};
+            var memGraphData = {};
             var newServerViews = [];
 
             for (var i = 0; i < data.length; i++) {
+
                 var current = data[i];
+                var name = current.name;
 
-                var server = ko.utils.arrayFirst(viewModel.servers(),
-                    function (s) { return s.serverFullName === current.serverFullName; });
+                var server = getServerView(name, current);
+                server.displayColor(getColor(name, cpuGraph.series));
 
-                if (server == null) {
-                    server = {
-                        serverColor: ko.observable("#000000"),
-                        serverName: current.serverName,
-                        serverFullName: current.serverFullName,
-                        processId: ko.observable(current.processId),
-                        processName: ko.observable(current.processName),
-                        cpuUsage: ko.observable(numeral(current.cpuUsagePercentage).format('0.0') + '%'),
-                        ramUsage: ko.observable(numeral(current.workingMemorySet).format('0.00b')),
-                        updated: current.timestamp
-                    };
-                } else {
-                    server.processId(current.processId);
-                    server.processName(current.processName);
-                    server.cpuUsage(current.cpuUsagePercentage + '%');
-                    server.ramUsage(numeral(current.workingMemorySet).format('0.00b'));
-
-                    if (current.timestamp === server.updated) continue;
-
-                    server.updated = current.timestamp;
-                }
                 newServerViews.push(server);
 
-                var x = current.timestamp;
-
-                var cpuGraphData = {};
-                cpuGraphData[current.serverFullName] = current.cpuUsagePercentage;
-                cpuGraph.series.addData(cpuGraphData, x);
-
-                var memGraphData = {};
-                memGraphData[current.serverFullName] = current.workingMemorySet;
-                memGraph.series.addData(memGraphData, x);
-
-                var series = ko.utils.arrayFirst(cpuGraph.series,
-                    function (s) {
-                        return s.name === server.serverFullName;
-                    });
-                if (series != null) {
-                    server.serverColor(series.color);
-                }
+                cpuGraphData[name] = current.cpuUsagePercentage;
+                memGraphData[name] = current.workingMemorySet;
             }
 
+            cpuGraph.series.addData(cpuGraphData);
             cpuGraph.update();
+
+            memGraph.series.addData(memGraphData);
             memGraph.update();
+
             viewModel.servers(newServerViews);
         });
 };
@@ -97,6 +69,41 @@ var createGraph = function (elementName, yAxisConfig) {
     yAxis.render();
 
     return graph;
+};
+
+var getServerView = function (name, current) {
+
+    var server = ko.utils.arrayFirst(viewModel.servers(),
+        function (s) { return s.name === name; });
+
+    var cpuUsage = numeral(current.cpuUsagePercentage).format('0.0') + '%';
+    var ramUsage = numeral(current.workingMemorySet).format('0.00b');
+
+    if (server == null) {
+        server = {
+            displayName: current.displayName,
+            displayColor: ko.observable("#000000"),
+            name: name,
+            processId: ko.observable(current.processId),
+            processName: ko.observable(current.processName),
+            cpuUsage: ko.observable(cpuUsage),
+            ramUsage: ko.observable(ramUsage)
+        };
+    } else {
+        server.processId(current.processId);
+        server.processName(current.processName);
+        server.cpuUsage(cpuUsage);
+        server.ramUsage(ramUsage);
+    }
+
+    return server;
+};
+
+var getColor = function (name, graphSeries) {
+    var series = ko.utils.arrayFirst(graphSeries,
+        function (s) { return s.name === name; });
+
+    return series != null ? series.color : "#000000";
 };
 
 var formatDate = function (unixSeconds) {
