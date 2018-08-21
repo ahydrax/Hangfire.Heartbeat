@@ -18,20 +18,20 @@ namespace Hangfire.Heartbeat
             DashboardRoutes.Routes.Add(OverviewPage.StatsRoute, new UtilizationJsonDispatcher());
 
             DashboardRoutes.Routes.Add(
-                "/heartbeat/knockout-3.4.2.js",
+                "/heartbeat/jsknockout",
                 new ContentDispatcher("application/js", "Hangfire.Heartbeat.Dashboard.js.knockout-3.4.2.js",
                     TimeSpan.FromDays(30)));
 
             DashboardRoutes.Routes.Add(
-                "/heartbeat/numeral.min.js",
+                "/heartbeat/jsnumeral",
                 new ContentDispatcher("application/js", "Hangfire.Heartbeat.Dashboard.js.numeral.min.js", TimeSpan.FromDays(30)));
 
             DashboardRoutes.Routes.Add(
-                "/heartbeat/OverviewPage.js",
+                "/heartbeat/jspage",
                 new ContentDispatcher("application/js", "Hangfire.Heartbeat.Dashboard.js.OverviewPage.js", TimeSpan.FromSeconds(1)));
 
             DashboardRoutes.Routes.Add(
-                "/heartbeat/styles.css",
+                "/heartbeat/cssstyles",
                 new ContentDispatcher("text/css", "Hangfire.Heartbeat.Dashboard.css.styles.css", TimeSpan.FromSeconds(1)));
 
             return config;
