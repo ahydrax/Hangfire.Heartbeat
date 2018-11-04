@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -80,7 +79,7 @@ namespace Hangfire.Heartbeat.Server
 
         private int ComputeCpuUsage(TimeSpan current, TimeSpan next)
         {
-            var totalMilliseconds = (int)(next - current).TotalMilliseconds;
+            var totalMilliseconds = (next - current).TotalMilliseconds;
             var totalCpuPercentUsage = (totalMilliseconds / _checkInterval.TotalMilliseconds) * 100;
             var cpuPercentUsage = totalCpuPercentUsage / _processorCount;
             return (int)cpuPercentUsage;
