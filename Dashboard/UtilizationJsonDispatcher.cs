@@ -28,6 +28,10 @@ namespace Hangfire.Heartbeat.Dashboard
                 {
                     var key = Utils.FormatKey(serverDto.Name);
                     var hash = connection.GetAllEntriesFromHash(key);
+
+                    if (hash == null) continue;
+                    if (hash.Count < 5) continue;
+
                     var view = new ServerView
                     {
                         DisplayName = FormatServerName(serverDto.Name),
