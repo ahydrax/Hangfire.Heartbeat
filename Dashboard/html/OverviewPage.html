@@ -16,23 +16,23 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12" style="margin-top: 30px">
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
                         <th style="width: 16px"></th>
-                        <th><a class="table_order_header" href="#" data-bind="orderable: {collection: 'serverList', field: 'displayName', defaultField: true, defaultDirection: 'desc'}">Server</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'displayName', defaultField: true, defaultDirection: 'asc'}">Server</a></th>
                         <th>PID</th>
                         <th>Exec name</th>
-                        <th><a class="table_order_header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsage'}">CPU</a></th>
-                        <th><a class="table_order_header" href="#" data-bind="orderable: {collection: 'serverList', field: 'ramUsage'}">RAM</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsage'}">CPU</a></th>
+                        <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'ramUsage'}">RAM</a></th>
                     </tr>
                 </thead>
 
                 <tbody data-bind="foreach: serverList">
                     <tr>
-                        <td><div data-bind="style: { 'border-color': displayColor }" class="server-indicator"></div></td>
+                        <td><div data-bind="style: { 'background-color': displayColor }" class="server-indicator"></div></td>
                         <td data-bind="text: displayName"></td>
                         <td data-bind="text: processId"></td>
                         <td data-bind="text: processName"></td>

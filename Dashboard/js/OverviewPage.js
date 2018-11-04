@@ -13,6 +13,21 @@ var formatDate = function (unixSeconds) {
     return moment(unixSeconds * 1000).format("H:mm:ss");
 };
 
+var formatTicks = function (yAxisFormatter) {
+    return function (y) { return y !== 0 ? yAxisFormatter(y) : ''; };
+};
+
+var formatDetails = function (yAxisFormatter) {
+    return function (series, x, y) {
+        var date = '<span class="date">' + formatDate(x) + '</span>';
+        if (series.name === "__STUB") return date;
+
+        var swatch = '<span class="server-indicator" style="background-color: ' + series.color + '"></span>&nbsp;';
+        var content = swatch + series.name + ": " + yAxisFormatter(y) + '<br>' + date;
+        return content;
+    };
+};
+
 // MODEL
 var UtilizationViewModel = function () {
     var self = this;
@@ -21,8 +36,8 @@ var UtilizationViewModel = function () {
 var viewModel = new UtilizationViewModel();
 
 // UPDATER
-var updater = function (cpuGraph, memGraph) {
-    $.get($("#heartbeatConfig").data("pollurl"),
+var updater = function (cpuGraph, memGraph, updateUrl) {
+    $.get(updateUrl,
         function (data) {
             var cpuGraphData = {};
             var memGraphData = {};
@@ -32,7 +47,7 @@ var updater = function (cpuGraph, memGraph) {
 
                 var current = data[i];
                 var name = current.name;
-                
+
                 cpuGraphData[name] = current.cpuUsagePercentage;
                 memGraphData[name] = current.workingMemorySet;
             }
@@ -67,8 +82,7 @@ var updater = function (cpuGraph, memGraph) {
         });
 };
 
-var createGraph = function (elementName, yAxisConfig) {
-    var timeInterval = $("#heartbeatConfig").data("pollinterval");
+var createGraph = function (elementName, checkInterval, yAxisConfig) {
     var graph = new Rickshaw.Graph({
         element: document.getElementById(elementName),
         height: 400,
@@ -77,10 +91,10 @@ var createGraph = function (elementName, yAxisConfig) {
         unstack: true,
         stroke: true,
         series: new Rickshaw.Series.FixedDuration([{ name: "__STUB" }],
-            "cool",
+            { scheme: 'cool' },
             {
-                timeInterval: timeInterval,
-                maxDataPoints: 60000 / timeInterval
+                timeInterval: checkInterval,
+                maxDataPoints: 60000 / checkInterval
             })
     });
 
@@ -109,7 +123,7 @@ var addOrUpdateServerView = function (name, current) {
     if (server == null) {
         server = {
             displayName: ko.observable(current.displayName),
-            displayColor: ko.observable("#000000"),
+            displayColor: ko.observable("transparent"),
             name: name,
             processId: ko.observable(current.processId),
             processName: ko.observable(current.processName),
@@ -131,56 +145,59 @@ var getColor = function (name, graphSeries) {
     var series = ko.utils.arrayFirst(graphSeries,
         function (s) { return s.name === name; });
 
-    return series != null ? series.color : "#000000";
+    return series != null ? series.color : "transparent";
 };
-
 
 // INITIALIZATION
 window.onload = function () {
+    var updateUrl = $("#heartbeatConfig").data("pollurl");
+    var updateInterval = $("#heartbeatConfig").data("pollinterval");
+    var showFullNameInPopup = $("#heartbeatConfig").data("showfullname") === "true";
 
-    var cpuGraph = createGraph("cpu-chart",
+    var cpuGraph = createGraph("cpu-chart", updateInterval,
         function (graph) {
             return new Rickshaw.Graph.Axis.Y({
                 graph: graph,
-                tickFormat: function (y) { return y !== 0 ? formatPercentage(y) : ''; },
+                tickFormat: formatTicks(formatPercentage),
                 ticksTreatment: 'glow'
             });
         });
-
-    var memGraph = createGraph("mem-chart",
-        function (graph) {
-            return new Rickshaw.Graph.Axis.Y({
-                graph: graph,
-                tickFormat: function (y) { return y !== 0 ? formatBytes(y) : ''; },
-                ticksTreatment: 'glow'
-            });
-        });
-
     var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: cpuGraph,
-        formatter: function (series, x, y) {
-            var date = '<span class="date">' + formatDate(x) + '</span>';
-            if (series.name === "__STUB") return date;
-
-            var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
-            var content = swatch + series.name + ": " + formatPercentage(y) + '<br>' + date;
-            return content;
-        }
+        formatter: formatDetails(formatPercentage)
     });
 
+    var memGraph = createGraph("mem-chart", updateInterval,
+        function (graph) {
+            return new Rickshaw.Graph.Axis.Y({
+                graph: graph,
+                tickFormat: formatTicks(formatBytes),
+                ticksTreatment: 'glow'
+            });
+        });
     var memHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: memGraph,
-        formatter: function (series, x, y) {
-            var date = '<span class="date">' + formatDate(x) + '</span>';
-            if (series.name === "__STUB") return date;
-
-            var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
-            var content = swatch + series.name + ": " + formatBytes(y) + '<br>' + date;
-            return content;
-        }
+        formatter: formatDetails(formatBytes)
     });
 
-    updater(cpuGraph, memGraph);
-    setInterval(function () { updater(cpuGraph, memGraph); }, $("#heartbeatConfig").data("pollinterval"));
+    setInterval(function () { updater(cpuGraph, memGraph, updateUrl); }, updateInterval);
     ko.applyBindings(viewModel);
+
+    $(window).on("resize", function () {
+        $(".rickshaw_graph").each(function () {
+            var container = $(this),
+                graph = container.data('graph');
+            
+            if (graph) {
+                var width = container.width(),
+                    height = container.height();
+                
+                if (graph.width !== width || graph.height !== height) {
+                    // container size has changed, update graph size
+                    graph.setSize({ width: width, height: height });
+                    graph.update();
+                }
+            }
+        });
+    });
 };

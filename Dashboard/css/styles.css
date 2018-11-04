@@ -1,7 +1,10 @@
 ﻿.server-indicator {
-    border: solid 8px;
-    width: 16px;
-    vertical-align: middle;
+    display: inline-block;
+    border: 0 solid;
+    border-radius: 20%;
+    width: 1em;
+    height: 1em;
+    vertical-align: text-bottom;
 }
 
 g .area {
@@ -18,19 +21,13 @@ g .area {
     padding: 0.5em
 }
 
-.detail_swatch {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 0 4px 0 0
-}
-
 .rickshaw_graph .detail .date {
     color: #a0a0a0
 }
 
-.table_order_header {
-    color: black;
+.sortable-header {
+    color: black !important;
+    text-decoration: none !important;
 }
 
 .desc:after {
