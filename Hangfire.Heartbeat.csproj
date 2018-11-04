@@ -7,7 +7,7 @@
     <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicenseUrl>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Viktor Svyatokha (ahydrax)</Authors>
     <Description>Server monitoring plugin for Hangfire.</Description>

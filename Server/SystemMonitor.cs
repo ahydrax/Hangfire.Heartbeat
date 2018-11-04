@@ -20,8 +20,11 @@ namespace Hangfire.Heartbeat.Server
 
         public SystemMonitor(TimeSpan checkInterval)
         {
-            _currentProcess = Process.GetCurrentProcess();
+            if (checkInterval == TimeSpan.Zero) throw new ArgumentException("Check interval must be nonzero value.", nameof(checkInterval));
+            if (checkInterval != checkInterval.Duration()) throw new ArgumentException("Check interval must be positive value.", nameof(checkInterval));
             _checkInterval = checkInterval;
+
+            _currentProcess = Process.GetCurrentProcess();
             _expireIn = _checkInterval + TimeSpan.FromMinutes(1);
             _processorCount = Environment.ProcessorCount;
             _processorTimeUsage = default;
