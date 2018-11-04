@@ -41,7 +41,7 @@ namespace Hangfire.Heartbeat.Dashboard
         private void WriteConfig()
         {
             WriteLiteral($@"<div id='heartbeatConfig' 
-data-pollinterval='{_options.CheckInterval.Milliseconds}'
+data-pollinterval='{(int)_options.CheckInterval.TotalMilliseconds}'
 data-pollurl='{Url.To(StatsRoute)}' 
 data-showfullname='{_options.ShowServerFullNameInDetails.ToString().ToLowerInvariant()}'></div>");
         }
