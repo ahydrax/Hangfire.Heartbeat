@@ -82,7 +82,7 @@ namespace Hangfire.Heartbeat.Server
             var totalMilliseconds = (next - current).TotalMilliseconds;
             var totalCpuPercentUsage = (totalMilliseconds / _checkInterval.TotalMilliseconds) * 100;
             var cpuPercentUsage = totalCpuPercentUsage / _processorCount;
-            return (int)cpuPercentUsage;
+            return (int)Math.Round(cpuPercentUsage);
         }
 
         private static void CleanupState(BackgroundProcessContext context)
