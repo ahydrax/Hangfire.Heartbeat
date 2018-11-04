@@ -28,3 +28,15 @@ g .area {
 .rickshaw_graph .detail .date {
     color: #a0a0a0
 }
+
+.table_order_header {
+    color: black;
+}
+
+.desc:after {
+    content: ' ▲';
+}
+
+.asc:after {
+    content: ' ▼';
+}

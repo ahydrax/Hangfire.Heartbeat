@@ -23,6 +23,11 @@ namespace Hangfire.Heartbeat
                     TimeSpan.FromDays(30)));
 
             DashboardRoutes.Routes.Add(
+                "/heartbeat/jsknockoutorderable",
+                new ContentDispatcher("application/js", "Hangfire.Heartbeat.Dashboard.js.knockout.bindings.orderable.js",
+                    TimeSpan.FromDays(30)));
+
+            DashboardRoutes.Routes.Add(
                 "/heartbeat/jsnumeral",
                 new ContentDispatcher("application/js", "Hangfire.Heartbeat.Dashboard.js.numeral.min.js", TimeSpan.FromDays(30)));
 

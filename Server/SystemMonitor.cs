@@ -17,6 +17,7 @@ namespace Hangfire.Heartbeat.Server
         private readonly TimeSpan _checkInterval;
         private readonly int _processorCount;
         private readonly TimeSpan _expireIn;
+        private (TimeSpan? current, TimeSpan? next) _processorTimeUsage;
 
         public SystemMonitor(TimeSpan checkInterval)
         {
@@ -24,18 +25,34 @@ namespace Hangfire.Heartbeat.Server
             _checkInterval = checkInterval;
             _expireIn = _checkInterval + TimeSpan.FromMinutes(1);
             _processorCount = Environment.ProcessorCount;
+            _processorTimeUsage = default;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
-            var connection = context.Storage.GetConnection();
             if (context.IsShutdownRequested)
             {
-                CleanupState(context, connection);
+                CleanupState(context);
+                return;
             }
 
-            var cpuPercentUsage = ComputeCpuUsage();
+            if (_processorTimeUsage.current.HasValue && _processorTimeUsage.next.HasValue)
+            {
+                var cpuPercentUsage = ComputeCpuUsage(_processorTimeUsage.current.Value, _processorTimeUsage.next.Value);
 
+                WriteState(context, cpuPercentUsage);
+            }
+
+            context.Wait(_checkInterval);
+            _currentProcess.Refresh();
+
+            var next = _currentProcess.TotalProcessorTime;
+            _processorTimeUsage = (_processorTimeUsage.next, next);
+        }
+
+        private void WriteState(BackgroundProcessContext context, int cpuPercentUsage)
+        {
+            using (var connection = context.Storage.GetConnection())
             using (var writeTransaction = connection.CreateWriteTransaction())
             {
                 var key = Utils.FormatKey(context.ServerId);
@@ -59,30 +76,23 @@ namespace Hangfire.Heartbeat.Server
 
                 writeTransaction.Commit();
             }
-
-            if (_checkInterval != TimeSpan.Zero)
-            {
-                context.Wait(_checkInterval);
-            }
         }
 
-        private int ComputeCpuUsage()
+        private int ComputeCpuUsage(TimeSpan current, TimeSpan next)
         {
-            var current = _currentProcess.TotalProcessorTime;
-            Thread.Sleep(WaitMilliseconds);
-            _currentProcess.Refresh();
-            var next = _currentProcess.TotalProcessorTime;
-
             var totalMilliseconds = (int)(next - current).TotalMilliseconds;
-            var cpuPercentUsage = totalMilliseconds / (_processorCount * 10);
-            return cpuPercentUsage;
+            var totalCpuPercentUsage = (totalMilliseconds / _checkInterval.TotalMilliseconds) * 100;
+            var cpuPercentUsage = totalCpuPercentUsage / _processorCount;
+            return (int)cpuPercentUsage;
         }
 
-        private static void CleanupState(BackgroundProcessContext context, IStorageConnection connection)
+        private static void CleanupState(BackgroundProcessContext context)
         {
+            using (var connection = context.Storage.GetConnection())
             using (var transaction = connection.CreateWriteTransaction())
             {
-                transaction.RemoveHash(context.ServerId);
+                var key = Utils.FormatKey(context.ServerId);
+                transaction.RemoveHash(key);
                 transaction.Commit();
             }
         }

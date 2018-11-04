@@ -22,7 +22,7 @@ namespace Hangfire.Heartbeat.Dashboard
 
         public OverviewPage(TimeSpan checkInterval)
         {
-            _config = $"<div id=\"heartbeatConfig\" data-pollinterval=\"{checkInterval.TotalMilliseconds + WaitMilliseconds}\" data-pollurl=\"{StatsRoute}\"></div>";
+            _config = $"<div id=\"heartbeatConfig\" data-pollinterval=\"{checkInterval.TotalMilliseconds}\" data-pollurl=\"{StatsRoute}\"></div>";
         }
 
         public override void Execute()

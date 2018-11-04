@@ -20,6 +20,7 @@
     <None Remove="Dashboard\css\styles.css" />
     <None Remove="Dashboard\html\OverviewPage.html" />
     <None Remove="Dashboard\js\knockout-3.4.2.js" />
+    <None Remove="Dashboard\js\knockout.bindings.orderable.js" />
     <None Remove="Dashboard\js\numeral.min.js" />
     <None Remove="Dashboard\js\OverviewPage.js" />
   </ItemGroup>
@@ -28,12 +29,14 @@
     <EmbeddedResource Include="Dashboard\css\styles.css" />
     <EmbeddedResource Include="Dashboard\html\OverviewPage.html" />
     <EmbeddedResource Include="Dashboard\js\knockout-3.4.2.js" />
+    <EmbeddedResource Include="Dashboard\js\knockout.bindings.orderable.js" />
     <EmbeddedResource Include="Dashboard\js\numeral.min.js" />
     <EmbeddedResource Include="Dashboard\js\OverviewPage.js" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HangFire.Core" Version="1.6.20" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
 </Project>
