@@ -17,13 +17,24 @@ var formatTicks = function (yAxisFormatter) {
     return function (y) { return y !== 0 ? yAxisFormatter(y) : ''; };
 };
 
-var formatDetails = function (yAxisFormatter) {
+var formatServerFullName = function (x) { return x; };
+
+var formatServerShortName = function (serverName) {
+    var lastIndex = serverName.lastIndexOf(":");
+    if (lastIndex != -1) {
+        return serverName.substring(0, lastIndex);
+    } else {
+        return serverName;
+    }
+};
+
+var formatDetails = function (serverNameFormatter, yAxisFormatter) {
     return function (series, x, y) {
         var date = '<span class="date">' + formatDate(x) + '</span>';
         if (series.name === "__STUB") return date;
 
         var swatch = '<span class="server-indicator" style="background-color: ' + series.color + '"></span>&nbsp;';
-        var content = swatch + series.name + ": " + yAxisFormatter(y) + '<br>' + date;
+        var content = swatch + serverNameFormatter(series.name) + ": " + yAxisFormatter(y) + '<br>' + date;
         return content;
     };
 };
@@ -153,6 +164,7 @@ window.onload = function () {
     var updateUrl = $("#heartbeatConfig").data("pollurl");
     var updateInterval = $("#heartbeatConfig").data("pollinterval");
     var showFullNameInPopup = $("#heartbeatConfig").data("showfullname") === "true";
+    var formatServerName = showFullNameInPopup ? formatServerFullName : formatServerShortName;
 
     var cpuGraph = createGraph("cpu-chart", updateInterval,
         function (graph) {
@@ -164,7 +176,7 @@ window.onload = function () {
         });
     var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: cpuGraph,
-        formatter: formatDetails(formatPercentage)
+        formatter: formatDetails(formatServerName, formatPercentage)
     });
 
     var memGraph = createGraph("mem-chart", updateInterval,
@@ -177,7 +189,7 @@ window.onload = function () {
         });
     var memHoverDetail = new Rickshaw.Graph.HoverDetail({
         graph: memGraph,
-        formatter: formatDetails(formatBytes)
+        formatter: formatDetails(formatServerName, formatBytes)
     });
 
     setInterval(function () { updater(cpuGraph, memGraph, updateUrl); }, updateInterval);
@@ -187,11 +199,11 @@ window.onload = function () {
         $(".rickshaw_graph").each(function () {
             var container = $(this),
                 graph = container.data('graph');
-            
+
             if (graph) {
                 var width = container.width(),
                     height = container.height();
-                
+
                 if (graph.width !== width || graph.height !== height) {
                     // container size has changed, update graph size
                     graph.setSize({ width: width, height: height });
