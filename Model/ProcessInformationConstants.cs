@@ -1,9 +1,7 @@
-﻿namespace Hangfire.Heartbeat
+﻿namespace Hangfire.Heartbeat.Model
 {
-    public static class Constants
+    internal static class ProcessInformationConstants
     {
-        public const int WaitMilliseconds = 1000;
-
         public const string ProcessId = "pid";
         public const string ProcessName = "processName";
         public const string CpuUsage = "cpu";

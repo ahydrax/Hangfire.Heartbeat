@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using static Hangfire.Heartbeat.Constants;
+using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
 
 namespace Hangfire.Heartbeat.Dashboard
 {
-    public class UtilizationJsonDispatcher : IDashboardDispatcher
+    internal sealed class UtilizationJsonDispatcher : IDashboardDispatcher
     {
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
@@ -36,11 +35,11 @@ namespace Hangfire.Heartbeat.Dashboard
                     {
                         DisplayName = FormatServerName(serverDto.Name),
                         Name = serverDto.Name,
-                        ProcessId = hash?[ProcessId],
-                        ProcessName = hash?[ProcessName],
-                        CpuUsagePercentage = ParseInt(hash?[CpuUsage]),
-                        WorkingMemorySet = ParseLong(hash?[WorkingSet]),
-                        Timestamp = ParseLong(hash?[Timestamp])
+                        ProcessId = hash[ProcessId],
+                        ProcessName = hash[ProcessName],
+                        CpuUsagePercentage = ParseInt(hash[CpuUsage]),
+                        WorkingMemorySet = ParseLong(hash[WorkingSet]),
+                        Timestamp = ParseLong(hash[Timestamp])
                     };
                     serverUtilizationViews.Add(view);
                 }

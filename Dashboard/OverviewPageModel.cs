@@ -3,7 +3,7 @@
 namespace Hangfire.Heartbeat.Dashboard
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public class ServerView
+    internal class ServerView
     {
         public string DisplayName { get; set; }
         public string Name { get; set; }

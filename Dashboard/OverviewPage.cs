@@ -1,7 +1,6 @@
 ﻿using System;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
-using static Hangfire.Heartbeat.Constants;
 
 namespace Hangfire.Heartbeat.Dashboard
 {
@@ -20,9 +19,13 @@ namespace Hangfire.Heartbeat.Dashboard
             PageHtml = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.html.OverviewPage.html");
         }
 
-        public OverviewPage(TimeSpan checkInterval)
+        public OverviewPage(HeartbeatOptions options)
         {
-            _config = $"<div id=\"heartbeatConfig\" data-pollinterval=\"{checkInterval.TotalMilliseconds}\" data-pollurl=\"{StatsRoute}\"></div>";
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            _config = $@"<div id='heartbeatConfig' 
+data-pollinterval='{options.CheckInterval.Milliseconds}'
+data-pollurl='{StatsRoute}' 
+data-showfullname='{options.ShowServerFullNameInDetails.ToString().ToLowerInvariant()}'></div>";
         }
 
         public override void Execute()

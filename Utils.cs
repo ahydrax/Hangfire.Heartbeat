@@ -3,7 +3,7 @@ using System.Resources;
 
 namespace Hangfire.Heartbeat
 {
-    public static class Utils
+    internal static class Utils
     {
         public static string ReadStringResource(string resourceName)
         {

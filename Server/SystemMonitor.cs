@@ -6,7 +6,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
-using static Hangfire.Heartbeat.Constants;
+using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
 
 namespace Hangfire.Heartbeat.Server
 {
