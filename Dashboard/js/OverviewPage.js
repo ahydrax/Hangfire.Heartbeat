@@ -101,6 +101,7 @@ var createGraph = function (elementName, checkInterval, yAxisConfig) {
         interpolation: 'cardinal',
         unstack: true,
         stroke: true,
+        padding: { top: 0.04 },
         series: new Rickshaw.Series.FixedDuration([{ name: "__STUB" }],
             { scheme: 'cool' },
             {

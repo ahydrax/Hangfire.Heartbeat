@@ -19,11 +19,18 @@
     <div class="col-md-12" style="margin-top: 30px">
         <div class="table-responsive">
             <table class="table">
+                <colgroup>
+                    <col width="16px" />
+                    <col width="50%" />
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+
                 <thead>
                     <tr>
-                        <th style="width: 16px"></th>
+                        <th class="text-center">PID</th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'displayName', defaultField: true, defaultDirection: 'asc'}">Server</a></th>
-                        <th>PID</th>
                         <th>Exec name</th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsage'}">CPU</a></th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'ramUsage'}">RAM</a></th>
@@ -32,9 +39,8 @@
 
                 <tbody data-bind="foreach: serverList">
                     <tr>
-                        <td><div data-bind="style: { 'background-color': displayColor }" class="server-indicator"></div></td>
+                        <td><span class="badge" data-bind="style: { 'background-color': displayColor }"><span data-bind="text: processId"></span></span></td>
                         <td data-bind="text: displayName"></td>
-                        <td data-bind="text: processId"></td>
                         <td data-bind="text: processName"></td>
                         <td data-bind="text: cpuUsage"></td>
                         <td data-bind="text: ramUsage"></td>

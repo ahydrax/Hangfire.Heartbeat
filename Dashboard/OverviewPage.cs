@@ -6,14 +6,13 @@ namespace Hangfire.Heartbeat.Dashboard
 {
     internal class OverviewPage : RazorPage
     {
+        private readonly HeartbeatOptions _options;
         public const string Title = "Heartbeat";
         public const string PageRoute = "/heartbeat";
         public const string StatsRoute = "/heartbeat/stats";
 
         private static readonly string PageHtml;
-
-        private readonly string _config;
-
+        
         static OverviewPage()
         {
             PageHtml = Utils.ReadStringResource("Hangfire.Heartbeat.Dashboard.html.OverviewPage.html");
@@ -21,11 +20,7 @@ namespace Hangfire.Heartbeat.Dashboard
 
         public OverviewPage(HeartbeatOptions options)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            _config = $@"<div id='heartbeatConfig' 
-data-pollinterval='{options.CheckInterval.Milliseconds}'
-data-pollurl='{StatsRoute}' 
-data-showfullname='{options.ShowServerFullNameInDetails.ToString().ToLowerInvariant()}'></div>";
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public override void Execute()
@@ -39,8 +34,16 @@ data-showfullname='{options.ShowServerFullNameInDetails.ToString().ToLowerInvari
         private void WriteLiteralLine(string textToAppend)
         {
             WriteLiteral(textToAppend);
-            WriteLiteral(_config);
+            WriteConfig();
             WriteLiteral("\r\n");
+        }
+
+        private void WriteConfig()
+        {
+            WriteLiteral($@"<div id='heartbeatConfig' 
+data-pollinterval='{_options.CheckInterval.Milliseconds}'
+data-pollurl='{Url.To(StatsRoute)}' 
+data-showfullname='{_options.ShowServerFullNameInDetails.ToString().ToLowerInvariant()}'></div>");
         }
 
         private void WriteEmptyLine()
