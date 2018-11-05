@@ -122,6 +122,8 @@ var createGraph = function (elementName, checkInterval, yAxisConfig) {
     var yAxis = yAxisConfig(graph);
     yAxis.render();
 
+    $.data(graph.element, 'graph', graph);
+
     return graph;
 };
 
@@ -198,8 +200,8 @@ window.onload = function () {
 
     $(window).on("resize", function () {
         $(".rickshaw_graph").each(function () {
-            var container = $(this),
-                graph = container.data('graph');
+            var container = $(this);
+            var graph = container.data('graph');
 
             if (graph) {
                 var width = container.width(),
