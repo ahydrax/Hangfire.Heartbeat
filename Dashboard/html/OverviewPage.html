@@ -39,7 +39,11 @@
 
                 <tbody data-bind="foreach: serverList">
                     <tr>
-                        <td><span class="badge" data-bind="style: { 'background-color': displayColor }"><span data-bind="text: processId"></span></span></td>
+                        <td>
+                            <span class="badge" data-bind="style: { 'background-color': displayColor }">
+                                <span class="text-center pid-label" data-bind="text: processId"></span>
+                            </span>
+                        </td>
                         <td data-bind="text: displayName"></td>
                         <td data-bind="text: processName"></td>
                         <td data-bind="text: cpuUsage"></td>

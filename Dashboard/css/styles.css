@@ -8,8 +8,13 @@
 }
 
 .sortable-header {
-    color: black !important;
+    color: #333 !important;
     text-decoration: none !important;
+}
+
+.pid-label {
+    min-width: 4em !important;
+    display: inline-block !important;
 }
 
 .asc:after {
