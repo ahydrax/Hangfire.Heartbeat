@@ -37,7 +37,7 @@ namespace Hangfire.Heartbeat.Dashboard
                         Name = serverDto.Name,
                         ProcessId = hash[ProcessId],
                         ProcessName = hash[ProcessName],
-                        CpuUsagePercentage = ParseInt(hash[CpuUsage]),
+                        CpuUsagePercentage = ParseDouble(hash[CpuUsage]),
                         WorkingMemorySet = ParseLong(hash[WorkingSet]),
                         Timestamp = ParseLong(hash[Timestamp])
                     };
@@ -56,10 +56,10 @@ namespace Hangfire.Heartbeat.Dashboard
             return lastIndex > 0 ? name.Substring(0, lastIndex) : name;
         }
 
-        private static int ParseInt(string s)
+        private static double ParseDouble(string s)
         {
-            int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i);
-            return i;
+            double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var d);
+            return d;
         }
 
         private static long ParseLong(string s)

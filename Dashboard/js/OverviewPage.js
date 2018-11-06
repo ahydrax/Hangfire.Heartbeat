@@ -14,7 +14,7 @@ var formatDate = function (unixSeconds) {
 };
 
 var formatTicks = function (yAxisFormatter) {
-    return function (y) { return y !== 0 ? yAxisFormatter(y) : ''; };
+    return function (y) { return y !== 0 ? yAxisFormatter(y) : ""; };
 };
 
 var formatServerFullName = function (x) { return x; };
@@ -30,11 +30,11 @@ var formatServerShortName = function (serverName) {
 
 var formatDetails = function (serverNameFormatter, yAxisFormatter) {
     return function (series, x, y) {
-        var date = '<span class="date">' + formatDate(x) + '</span>';
+        var date = "<span class='date'>" + formatDate(x) + "</span>";
         if (series.name === "__STUB") return date;
 
-        var swatch = '<span class="server-indicator" style="background-color: ' + series.color + '"></span>&nbsp;';
-        var content = swatch + serverNameFormatter(series.name) + ": " + yAxisFormatter(y) + '<br>' + date;
+        var swatch = "<span class='server-indicator' style='background-color: " + series.color + "'></span>&nbsp;";
+        var content = swatch + serverNameFormatter(series.name) + ": " + yAxisFormatter(y) + "<br>" + date;
         return content;
     };
 };
@@ -97,13 +97,13 @@ var createGraph = function (elementName, checkInterval, yAxisConfig) {
     var graph = new Rickshaw.Graph({
         element: document.getElementById(elementName),
         height: 400,
-        renderer: 'area',
-        interpolation: 'cardinal',
+        renderer: "area",
+        interpolation: "linear",
         unstack: true,
         stroke: true,
         padding: { top: 0.04 },
         series: new Rickshaw.Series.FixedDuration([{ name: "__STUB" }],
-            { scheme: 'cool' },
+            { scheme: "cool" },
             {
                 timeInterval: checkInterval,
                 maxDataPoints: 60000 / checkInterval
@@ -112,17 +112,17 @@ var createGraph = function (elementName, checkInterval, yAxisConfig) {
 
     var xAxis = new Rickshaw.Graph.Axis.X({
         graph: graph,
-        ticksTreatment: 'glow',
-        tickFormat: function (x) { return ''; },
+        ticksTreatment: "glow",
+        tickFormat: function (x) { return ""; },
         ticks: 10,
-        timeUnit: 'second'
+        timeUnit: "second"
     });
     xAxis.render();
 
     var yAxis = yAxisConfig(graph);
     yAxis.render();
 
-    $.data(graph.element, 'graph', graph);
+    $.data(graph.element, "graph", graph);
 
     return graph;
 };
@@ -142,14 +142,18 @@ var addOrUpdateServerView = function (name, current) {
             processId: ko.observable(current.processId),
             processName: ko.observable(current.processName),
             cpuUsage: ko.observable(cpuUsage),
-            ramUsage: ko.observable(ramUsage)
+            cpuUsageRawValue: ko.observable(current.cpuUsagePercentage),
+            ramUsage: ko.observable(ramUsage),
+            ramUsageRawValue: ko.observable(current.workingMemorySet)
         };
         viewModel.serverList.push(server);
     } else {
         server.processId(current.processId);
         server.processName(current.processName);
         server.cpuUsage(cpuUsage);
+        server.cpuUsageRawValue(current.cpuUsagePercentage);
         server.ramUsage(ramUsage);
+        server.ramUsageRawValue(current.workingMemorySet);
     }
 
     return server;
@@ -174,7 +178,7 @@ window.onload = function () {
             return new Rickshaw.Graph.Axis.Y({
                 graph: graph,
                 tickFormat: formatTicks(formatPercentage),
-                ticksTreatment: 'glow'
+                ticksTreatment: "glow"
             });
         });
     var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
@@ -187,7 +191,7 @@ window.onload = function () {
             return new Rickshaw.Graph.Axis.Y({
                 graph: graph,
                 tickFormat: formatTicks(formatBytes),
-                ticksTreatment: 'glow'
+                ticksTreatment: "glow"
             });
         });
     var memHoverDetail = new Rickshaw.Graph.HoverDetail({
@@ -201,7 +205,7 @@ window.onload = function () {
     $(window).on("resize", function () {
         $(".rickshaw_graph").each(function () {
             var container = $(this);
-            var graph = container.data('graph');
+            var graph = container.data("graph");
 
             if (graph) {
                 var width = container.width(),

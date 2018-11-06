@@ -52,7 +52,7 @@ namespace Hangfire.Heartbeat.Server
             _processorTimeUsage = (_processorTimeUsage.next, next);
         }
 
-        private void WriteState(BackgroundProcessContext context, int cpuPercentUsage)
+        private void WriteState(BackgroundProcessContext context, double cpuPercentUsage)
         {
             using (var connection = context.Storage.GetConnection())
             using (var writeTransaction = connection.CreateWriteTransaction())
@@ -80,12 +80,12 @@ namespace Hangfire.Heartbeat.Server
             }
         }
 
-        private int ComputeCpuUsage(TimeSpan current, TimeSpan next)
+        private double ComputeCpuUsage(TimeSpan current, TimeSpan next)
         {
             var totalMilliseconds = (next - current).TotalMilliseconds;
             var totalCpuPercentUsage = (totalMilliseconds / _checkInterval.TotalMilliseconds) * 100;
             var cpuPercentUsage = totalCpuPercentUsage / _processorCount;
-            return (int)Math.Round(cpuPercentUsage);
+            return Math.Round(cpuPercentUsage, 1);
         }
 
         private static void CleanupState(BackgroundProcessContext context)

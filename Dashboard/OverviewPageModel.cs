@@ -9,7 +9,7 @@ namespace Hangfire.Heartbeat.Dashboard
         public string Name { get; set; }
         public string ProcessId { get; set; }
         public string ProcessName { get; set; }
-        public int CpuUsagePercentage { get; set; }
+        public double CpuUsagePercentage { get; set; }
         public long WorkingMemorySet { get; set; }
         public long Timestamp { get; set; }
     }
