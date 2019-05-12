@@ -6,7 +6,7 @@
     <PackageId>Hangfire.Heartbeat</PackageId>
     <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicense>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicense>
     <Version>0.3.4</Version>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Viktor Svyatokha (ahydrax)</Authors>
@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HangFire.Core" Version="1.6.20" />
+    <PackageReference Include="HangFire.Core" Version="1.7.2" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

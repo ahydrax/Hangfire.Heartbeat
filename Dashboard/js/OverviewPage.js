@@ -1,30 +1,173 @@
 ﻿"use strict";
 
+function shuffle(arr) {
+    var ctr = arr.length, temp, index;
+    while (ctr > 0) {
+        index = Math.floor(Math.random() * ctr);
+        ctr--;
+        temp = arr[ctr];
+        arr[ctr] = arr[index];
+        arr[index] = temp;
+    }
+    return arr;
+}
+
+function ColorGenerator() {
+    this._index = 0;
+    this._colorsList = shuffle([
+        "#4dc9f6",
+        "#f67019",
+        "#f53794",
+        "#537bc4",
+        "#acc236",
+        "#166a8f",
+        "#00a950",
+        "#58595b",
+        "#8549ba",
+        "#85144b",
+        "#2ecc40",
+        "#39cccc",
+        "#ffdc00",
+        "#b10dc9",
+        "#3d9970",
+        "#01ff70",
+        "#7fdbff",
+        "#f012be",
+        "#ff4136",
+        "#0074d9",
+        "#001f3f",
+        "#ff851b"
+    ]);
+    this._colorCache = {};
+
+    this.getColor = function (name) {
+        if (this._colorCache[name] != undefined) {
+            return this._colorCache[name];
+        }
+
+        var color = "#000000";
+        if (this._index < this._colorsList.length) {
+            color = this._colorsList[this._index++];
+
+        } else {
+            color = getRandomColor();
+        }
+
+        this._colorCache[name] = color;
+        return color;
+    };
+
+    this.getRandomColor = function () {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
+}
+
+var colorGenerator = new ColorGenerator();
+
+// GRAPH
+function SeriesGraph(element, tickFormat, pollInterval) {
+    this._seriesIndex = 0;
+    this._chart = new Chart(element,
+        {
+            type: 'line',
+            data: {
+                datasets: [
+                ]
+            },
+            options: {
+                aspectRatio: 1,
+                scales: {
+                    xAxes: [
+                        {
+                            type: 'realtime',
+                            realtime: { duration: 60 * 1000, delay: pollInterval + 1000 },
+                            time: {
+                                unit: 'second',
+                                tooltipFormat: 'LL LTS',
+                                displayFormats: { second: 'LTS', minute: 'LTS' }
+                            },
+                            ticks: {
+                                maxRotation: 0
+                            }
+                        }
+                    ],
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                                min: 0,
+                                maxTicksLimit: 10,
+                                suggestedMax: 10,
+                                callback: tickFormat
+                            }
+                        }
+                    ]
+                },
+                elements: { line: { tension: 0 }, point: { radius: 0 } },
+                animation: { duration: 0 },
+                hover: { animationDuration: 0 },
+                responsiveAnimationDuration: 0,
+                legend: { display: false },
+                tooltips: {
+                    mode: 'nearest',
+                    intersect: false
+                },
+                plugins: {
+                    filler: {
+                        propagate: true
+                    }
+                }
+            }
+        });
+
+    this.appendData = function (timestamp, name, data) {
+        var now = new Date(timestamp * 1000);
+
+        var server = ko.utils.arrayFirst(this._chart.data.datasets,
+            function (s) { return s.id === name; });
+
+        if (server == null) {
+            var seriesColor = colorGenerator.getColor(name);
+            server = {
+                id: name,
+                label: getServerShortName(name),
+                borderColor: seriesColor,
+                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.5).rgbString(),
+                fill: "origin",
+                data: []
+            };
+            this._chart.data.datasets.push(server);
+            this._seriesIndex++;
+        }
+
+        server.data.push({ x: now, y: data });
+    };
+
+    this.update = function () {
+        this._chart.update();
+    }
+};
+
 // UTILITY
-var formatPercentage = function (x) {
-    return numeral(x).format("0.[00]") + "%";
+var formatPercentage = function (value, index, values) {
+    return numeral(value).format("0.[00]") + "%";
 };
 
-var formatBytes = function (x) {
-    return numeral(x).format("0.[00] b");
+var formatBytes = function (value, index, values) {
+    return numeral(value).format("0.[00] b");
 };
-
-var formatDate = function (unixSeconds) {
-    return moment(unixSeconds * 1000).format("H:mm:ss");
-};
-
-var formatTicks = function (yAxisFormatter) {
-    return function (y) { return y !== 0 ? yAxisFormatter(y) : ""; };
-};
-
-var formatServerFullName = function (x) { return x; };
-
-var formatServerShortName = function (serverName) {
-    var lastIndex = serverName.lastIndexOf(":");
+var getServerShortName = function (name) {
+    var lastIndex = name.lastIndexOf(":");
     if (lastIndex != -1) {
-        return serverName.substring(0, lastIndex);
+        return name.substring(0, lastIndex);
     } else {
-        return serverName;
+        return name;
     }
 };
 
@@ -50,21 +193,18 @@ var viewModel = new UtilizationViewModel();
 var updater = function (cpuGraph, memGraph, updateUrl) {
     $.get(updateUrl,
         function (data) {
-            var cpuGraphData = {};
-            var memGraphData = {};
             var newServerViews = [];
 
             for (var i = 0; i < data.length; i++) {
 
                 var current = data[i];
-                var name = current.name;
 
-                cpuGraphData[name] = current.cpuUsagePercentage;
-                memGraphData[name] = current.workingMemorySet;
+                cpuGraph.appendData(current.timestamp, current.name, current.cpuUsagePercentage);
+                memGraph.appendData(current.timestamp, current.name, current.workingMemorySet);
             }
 
-            cpuGraph.series.addData(cpuGraphData);
             cpuGraph.update();
+            memGraph.update();
 
             for (var i = 0; i < data.length; i++) {
 
@@ -72,12 +212,9 @@ var updater = function (cpuGraph, memGraph, updateUrl) {
                 var name = current.name;
 
                 var server = addOrUpdateServerView(name, current);
-                server.displayColor(getColor(name, cpuGraph.series));
+                server.displayColor(getColor(name, cpuGraph));
                 newServerViews.push(server);
             }
-
-            memGraph.series.addData(memGraphData);
-            memGraph.update();
 
             viewModel.serverList.remove(function (item) {
                 var found = false;
@@ -91,40 +228,6 @@ var updater = function (cpuGraph, memGraph, updateUrl) {
 
             viewModel.serverList.orderField(viewModel.serverList.orderField());
         });
-};
-
-var createGraph = function (elementName, checkInterval, yAxisConfig) {
-    var graph = new Rickshaw.Graph({
-        element: document.getElementById(elementName),
-        height: 400,
-        renderer: "area",
-        interpolation: "linear",
-        unstack: true,
-        stroke: true,
-        padding: { top: 0.04 },
-        series: new Rickshaw.Series.FixedDuration([{ name: "__STUB" }],
-            { scheme: "cool" },
-            {
-                timeInterval: checkInterval,
-                maxDataPoints: 60000 / checkInterval
-            })
-    });
-
-    var xAxis = new Rickshaw.Graph.Axis.X({
-        graph: graph,
-        ticksTreatment: "glow",
-        tickFormat: function (x) { return ""; },
-        ticks: 10,
-        timeUnit: "second"
-    });
-    xAxis.render();
-
-    var yAxis = yAxisConfig(graph);
-    yAxis.render();
-
-    $.data(graph.element, "graph", graph);
-
-    return graph;
 };
 
 var addOrUpdateServerView = function (name, current) {
@@ -160,63 +263,22 @@ var addOrUpdateServerView = function (name, current) {
 };
 
 var getColor = function (name, graphSeries) {
-    var series = ko.utils.arrayFirst(graphSeries,
-        function (s) { return s.name === name; });
+    var series = ko.utils.arrayFirst(graphSeries._chart.data.datasets,
+        function (s) { return s.id === name; });
 
-    return series != null ? series.color : "transparent";
+    return series != null ? series.borderColor : "transparent";
 };
 
 // INITIALIZATION
 window.onload = function () {
     var updateUrl = $("#heartbeatConfig").data("pollurl");
-    var updateInterval = $("#heartbeatConfig").data("pollinterval");
+    var updateInterval = parseInt($("#heartbeatConfig").data("pollinterval"));
     var showFullNameInPopup = $("#heartbeatConfig").data("showfullname") === "true";
-    var formatServerName = showFullNameInPopup ? formatServerFullName : formatServerShortName;
 
-    var cpuGraph = createGraph("cpu-chart", updateInterval,
-        function (graph) {
-            return new Rickshaw.Graph.Axis.Y({
-                graph: graph,
-                tickFormat: formatTicks(formatPercentage),
-                ticksTreatment: "glow"
-            });
-        });
-    var cpuHoverDetail = new Rickshaw.Graph.HoverDetail({
-        graph: cpuGraph,
-        formatter: formatDetails(formatServerName, formatPercentage)
-    });
+    var cpuGraph = new SeriesGraph("cpu-chart", formatPercentage, updateInterval);
+    var memGraph = new SeriesGraph("mem-chart", formatBytes, updateInterval);
 
-    var memGraph = createGraph("mem-chart", updateInterval,
-        function (graph) {
-            return new Rickshaw.Graph.Axis.Y({
-                graph: graph,
-                tickFormat: formatTicks(formatBytes),
-                ticksTreatment: "glow"
-            });
-        });
-    var memHoverDetail = new Rickshaw.Graph.HoverDetail({
-        graph: memGraph,
-        formatter: formatDetails(formatServerName, formatBytes)
-    });
-
+    updater(cpuGraph, memGraph, updateUrl);
     setInterval(function () { updater(cpuGraph, memGraph, updateUrl); }, updateInterval);
     ko.applyBindings(viewModel);
-
-    $(window).on("resize", function () {
-        $(".rickshaw_graph").each(function () {
-            var container = $(this);
-            var graph = container.data("graph");
-
-            if (graph) {
-                var width = container.width(),
-                    height = container.height();
-
-                if (graph.width !== width || graph.height !== height) {
-                    // container size has changed, update graph size
-                    graph.setSize({ width: width, height: height });
-                    graph.update();
-                }
-            }
-        });
-    });
 };

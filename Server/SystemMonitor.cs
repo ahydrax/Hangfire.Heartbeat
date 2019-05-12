@@ -32,7 +32,7 @@ namespace Hangfire.Heartbeat.Server
 
         public void Execute(BackgroundProcessContext context)
         {
-            if (context.IsShutdownRequested)
+            if (context.IsStopping)
             {
                 CleanupState(context);
                 return;
