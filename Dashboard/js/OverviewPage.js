@@ -1,6 +1,8 @@
 ﻿"use strict";
 
 function ColorGenerator() {
+    var self = this;
+
     function shuffle(arr) {
         var ctr = arr.length, temp, index;
         while (ctr > 0) {
@@ -13,8 +15,8 @@ function ColorGenerator() {
         return arr;
     }
 
-    this._index = 0;
-    this._colorsList = shuffle([
+    self._index = 0;
+    self._colorsList = shuffle([
         "#f44336",
         "#e91e63",
         "#9c27b0",
@@ -33,41 +35,41 @@ function ColorGenerator() {
         "#85144b",
         "#001f3f"
     ]);
-    this._colorCache = {};
+    self._colorCache = {};
 
-    this.getColor = function (name) {
-        if (this._colorCache[name] != undefined) {
-            return this._colorCache[name];
+    self.getColor = function (name) {
+        if (self._colorCache[name] != undefined) {
+            return self._colorCache[name];
         }
 
-        var color = "#000000";
-        if (this._index < this._colorsList.length) {
-            color = this._colorsList[this._index++];
+        var color;
+        if (self._index < self._colorsList.length) {
+            color = self._colorsList[self._index++];
 
         } else {
-            color = this.getRandomColor();
+            color = self.getRandomColor();
         }
 
-        this._colorCache[name] = color;
+        self._colorCache[name] = color;
         return color;
     };
 
-    this._hexSymbols = "0123456789abcdef".split("");
-    this.getRandomColor = function () {
+    self._hexSymbols = "0123456789abcdef".split("");
+    self.getRandomColor = function () {
         var color = "#";
         for (var i = 0; i < 6; i++) {
-            color += this._hexSymbols[Math.floor(Math.random() * 16)];
+            color += self._hexSymbols[Math.floor(Math.random() * 16)];
         }
         return color;
     };
 }
 
-var colorGenerator = new ColorGenerator();
-
 // GRAPH
-function SeriesGraph(element, tickFormat, pollInterval) {
-    this._seriesIndex = 0;
-    this._chart = new Chart(element,
+function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
+    var self = this;
+    self._colorGenerator = colorGenerator;
+    self._seriesIndex = 0;
+    self._chart = new Chart(element,
         {
             type: "line",
             data: {
@@ -108,36 +110,42 @@ function SeriesGraph(element, tickFormat, pollInterval) {
                 animation: { duration: 0 },
                 hover: { animationDuration: 0 },
                 responsiveAnimationDuration: 0,
-                legend: { display: false }
+                legend: { display: false },
+                tooltips: {
+                    position: "nearest",
+                    mode: "index",
+                    intersect: false
+                }
             }
         });
 
-    this.appendData = function (timestamp, name, data) {
+    self.appendData = function (timestamp, name, data) {
         var now = new Date(timestamp * 1000);
 
-        var server = ko.utils.arrayFirst(this._chart.data.datasets,
+        var server = ko.utils.arrayFirst(self._chart.data.datasets,
             function (s) { return s.id === name; });
 
         if (server == null) {
-            var seriesColor = colorGenerator.getColor(name);
+            var seriesColor = self._colorGenerator.getColor(name);
             server = {
                 id: name,
                 label: getServerShortName(name),
                 borderColor: seriesColor,
                 backgroundColor: Chart.helpers.color(seriesColor).alpha(0.2).rgbString(),
                 fill: "origin",
+                hidden: false,
                 data: []
             };
-            this._chart.data.datasets.push(server);
+            self._chart.data.datasets.push(server);
             server.data.push({ x: now - 1, y: 0 });
-            this._seriesIndex++;
+            self._seriesIndex++;
         }
 
         server.data.push({ x: now, y: data });
     };
 
-    this.update = function () {
-        this._chart.update();
+    self.update = function () {
+        self._chart.update();
     }
 };
 
@@ -160,14 +168,66 @@ var getServerShortName = function (name) {
 };
 
 // MODEL
-var UtilizationViewModel = function () {
+var UtilizationViewModel = function (cpuGraph, memGraph, colorGenerator) {
     var self = this;
+    self._cpuGraph = cpuGraph;
+    self._memGraph = memGraph;
+    self._colorGenerator = colorGenerator;
+
     self.serverList = ko.observableArray();
-};
-var viewModel = new UtilizationViewModel();
+
+    self.hideSeries = function (row) {
+        row.hidden(!row.hidden());
+        var hidden = row.hidden();
+        self._hideSeries(row.name, hidden, self._cpuGraph);
+        self._hideSeries(row.name, hidden, self._memGraph);
+    };
+
+    self._hideSeries = function (id, hidden, graph) {
+        var server = ko.utils.arrayFirst(graph._chart.data.datasets,
+            function (s) { return s.id === id; });
+        if (server != null) {
+            server.hidden = hidden;
+            graph.update();
+        };
+    };
+
+    self.getServerView = function (name, data) {
+        var server = ko.utils.arrayFirst(self.serverList(),
+            function (s) { return s.name === name; });
+
+        var cpuUsage = formatPercentage(data.cpuUsagePercentage);
+        var ramUsage = formatBytes(data.workingMemorySet);
+
+        if (server == null) {
+            server = {
+                displayName: ko.observable(data.displayName),
+                displayColor: ko.observable(self._colorGenerator.getColor(name)),
+                hidden: ko.observable(false),
+                name: name,
+                processId: ko.observable(data.processId),
+                processName: ko.observable(data.processName),
+                cpuUsage: ko.observable(cpuUsage),
+                cpuUsageRawValue: ko.observable(data.cpuUsagePercentage),
+                ramUsage: ko.observable(ramUsage),
+                ramUsageRawValue: ko.observable(data.workingMemorySet)
+            };
+            self.serverList.push(server);
+        } else {
+            server.processId(data.processId);
+            server.processName(data.processName);
+            server.cpuUsage(cpuUsage);
+            server.cpuUsageRawValue(data.cpuUsagePercentage);
+            server.ramUsage(ramUsage);
+            server.ramUsageRawValue(data.workingMemorySet);
+        }
+
+        return server;
+    };
+}
 
 // UPDATER
-var updater = function (cpuGraph, memGraph, updateUrl) {
+var updater = function (viewModel, cpuGraph, memGraph, updateUrl) {
     $.get(updateUrl,
         function (data) {
             var newServerViews = [];
@@ -179,9 +239,7 @@ var updater = function (cpuGraph, memGraph, updateUrl) {
                 cpuGraph.appendData(current.timestamp, name, current.cpuUsagePercentage);
                 memGraph.appendData(current.timestamp, name, current.workingMemorySet);
 
-                var server = addOrUpdateServerView(name, current);
-                var serverColor = colorGenerator.getColor(name);
-                server.displayColor(serverColor);
+                var server = viewModel.getServerView(name, current);
                 newServerViews.push(server);
             }
 
@@ -194,48 +252,18 @@ var updater = function (cpuGraph, memGraph, updateUrl) {
         .fail(function () { viewModel.serverList([]); });
 };
 
-var addOrUpdateServerView = function (name, current) {
-    var server = ko.utils.arrayFirst(viewModel.serverList(),
-        function (s) { return s.name === name; });
-
-    var cpuUsage = formatPercentage(current.cpuUsagePercentage);
-    var ramUsage = formatBytes(current.workingMemorySet);
-
-    if (server == null) {
-        server = {
-            displayName: ko.observable(current.displayName),
-            displayColor: ko.observable("transparent"),
-            name: name,
-            processId: ko.observable(current.processId),
-            processName: ko.observable(current.processName),
-            cpuUsage: ko.observable(cpuUsage),
-            cpuUsageRawValue: ko.observable(current.cpuUsagePercentage),
-            ramUsage: ko.observable(ramUsage),
-            ramUsageRawValue: ko.observable(current.workingMemorySet)
-        };
-        viewModel.serverList.push(server);
-    } else {
-        server.processId(current.processId);
-        server.processName(current.processName);
-        server.cpuUsage(cpuUsage);
-        server.cpuUsageRawValue(current.cpuUsagePercentage);
-        server.ramUsage(ramUsage);
-        server.ramUsageRawValue(current.workingMemorySet);
-    }
-
-    return server;
-};
-
 // INITIALIZATION
 window.onload = function () {
     var updateUrl = $("#heartbeatConfig").data("pollurl");
     var updateInterval = parseInt($("#heartbeatConfig").data("pollinterval"));
     var showFullNameInPopup = $("#heartbeatConfig").data("showfullname") === "true";
 
-    var cpuGraph = new SeriesGraph("cpu-chart", formatPercentage, updateInterval);
-    var memGraph = new SeriesGraph("mem-chart", formatBytes, updateInterval);
-
-    updater(cpuGraph, memGraph, updateUrl);
-    setInterval(function () { updater(cpuGraph, memGraph, updateUrl); }, updateInterval);
+    var colorGenerator = new ColorGenerator();
+    var cpuGraph = new SeriesGraph("cpu-chart", formatPercentage, colorGenerator, updateInterval);
+    var memGraph = new SeriesGraph("mem-chart", formatBytes, colorGenerator, updateInterval);
+    var viewModel = new UtilizationViewModel(cpuGraph, memGraph, colorGenerator);
     ko.applyBindings(viewModel);
+
+    updater(viewModel, cpuGraph, memGraph, updateUrl);
+    setInterval(function () { updater(viewModel, cpuGraph, memGraph, updateUrl); }, updateInterval);
 };

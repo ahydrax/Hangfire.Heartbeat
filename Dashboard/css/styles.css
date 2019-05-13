@@ -13,6 +13,11 @@
 }
 
 .pid-label {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     min-width: 3em !important;
     display: inline-block !important;
 }

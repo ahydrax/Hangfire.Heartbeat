@@ -40,8 +40,8 @@
                 <tbody data-bind="foreach: serverList">
                     <tr>
                         <td>
-                            <span class="badge" data-bind="style: { 'background-color': displayColor }">
-                                <span class="text-center pid-label" data-bind="text: processId"></span>
+                            <span class="badge" data-bind="style: { 'background-color': displayColor }, click: $parent.hideSeries">
+                                <span class="text-center pid-label" data-bind="text: processId, style: { 'text-decoration': hidden() ? 'line-through' : 'none' }"></span>
                             </span>
                         </td>
                         <td data-bind="text: displayName"></td>
