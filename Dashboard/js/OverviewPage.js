@@ -15,28 +15,23 @@ function ColorGenerator() {
 
     this._index = 0;
     this._colorsList = shuffle([
-        "#4dc9f6",
-        "#f67019",
-        "#f53794",
-        "#537bc4",
-        "#acc236",
-        "#166a8f",
-        "#00a950",
-        "#58595b",
-        "#8549ba",
-        "#85144b",
-        "#2ecc40",
+        "#f44336",
+        "#e91e63",
+        "#9c27b0",
+        "#673ab7",
+        "#3f51b5",
+        "#2196f3",
         "#39cccc",
-        "#ffdc00",
-        "#b10dc9",
-        "#3d9970",
+        "#009688",
+        "#4caf50",
         "#01ff70",
-        "#7fdbff",
-        "#f012be",
-        "#ff4136",
-        "#0074d9",
-        "#001f3f",
-        "#ff851b"
+        "#acc236",
+        "#ffc107",
+        "#ff9800",
+        "#ff5722",
+        "#607d8b",
+        "#85144b",
+        "#001f3f"
     ]);
     this._colorCache = {};
 
@@ -50,7 +45,7 @@ function ColorGenerator() {
             color = this._colorsList[this._index++];
 
         } else {
-            color = getRandomColor();
+            color = this.getRandomColor();
         }
 
         this._colorCache[name] = color;
@@ -129,7 +124,7 @@ function SeriesGraph(element, tickFormat, pollInterval) {
                 id: name,
                 label: getServerShortName(name),
                 borderColor: seriesColor,
-                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.1).rgbString(),
+                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.2).rgbString(),
                 fill: "origin",
                 data: []
             };
