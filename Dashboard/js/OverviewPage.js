@@ -1,18 +1,18 @@
 ﻿"use strict";
 
-function shuffle(arr) {
-    var ctr = arr.length, temp, index;
-    while (ctr > 0) {
-        index = Math.floor(Math.random() * ctr);
-        ctr--;
-        temp = arr[ctr];
-        arr[ctr] = arr[index];
-        arr[index] = temp;
-    }
-    return arr;
-}
-
 function ColorGenerator() {
+    function shuffle(arr) {
+        var ctr = arr.length, temp, index;
+        while (ctr > 0) {
+            index = Math.floor(Math.random() * ctr);
+            ctr--;
+            temp = arr[ctr];
+            arr[ctr] = arr[index];
+            arr[index] = temp;
+        }
+        return arr;
+    }
+
     this._index = 0;
     this._colorsList = shuffle([
         "#4dc9f6",
@@ -57,11 +57,11 @@ function ColorGenerator() {
         return color;
     };
 
+    this._hexSymbols = "0123456789abcdef".split("");
     this.getRandomColor = function () {
-        var letters = '0123456789ABCDEF'.split('');
-        var color = '#';
+        var color = "#";
         for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
+            color += this._hexSymbols[Math.floor(Math.random() * 16)];
         }
         return color;
     };
@@ -74,22 +74,22 @@ function SeriesGraph(element, tickFormat, pollInterval) {
     this._seriesIndex = 0;
     this._chart = new Chart(element,
         {
-            type: 'line',
+            type: "line",
             data: {
-                datasets: [
-                ]
+                datasets: []
             },
             options: {
                 aspectRatio: 1,
                 scales: {
                     xAxes: [
                         {
-                            type: 'realtime',
+                            type: "realtime",
                             realtime: { duration: 60 * 1000, delay: pollInterval + 1000 },
                             time: {
-                                unit: 'second',
-                                tooltipFormat: 'LL LTS',
-                                displayFormats: { second: 'LTS', minute: 'LTS' }
+                                stepSize: 10,
+                                unit: "second",
+                                tooltipFormat: "LL LTS",
+                                displayFormats: { second: "LTS", minute: "LTS" }
                             },
                             ticks: {
                                 maxRotation: 0
@@ -113,16 +113,7 @@ function SeriesGraph(element, tickFormat, pollInterval) {
                 animation: { duration: 0 },
                 hover: { animationDuration: 0 },
                 responsiveAnimationDuration: 0,
-                legend: { display: false },
-                tooltips: {
-                    mode: 'nearest',
-                    intersect: false
-                },
-                plugins: {
-                    filler: {
-                        propagate: true
-                    }
-                }
+                legend: { display: false }
             }
         });
 
@@ -138,11 +129,12 @@ function SeriesGraph(element, tickFormat, pollInterval) {
                 id: name,
                 label: getServerShortName(name),
                 borderColor: seriesColor,
-                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.5).rgbString(),
+                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.1).rgbString(),
                 fill: "origin",
                 data: []
             };
             this._chart.data.datasets.push(server);
+            server.data.push({ x: now - 1, y: 0 });
             this._seriesIndex++;
         }
 
@@ -162,24 +154,14 @@ var formatPercentage = function (value, index, values) {
 var formatBytes = function (value, index, values) {
     return numeral(value).format("0.[00] b");
 };
+
 var getServerShortName = function (name) {
     var lastIndex = name.lastIndexOf(":");
-    if (lastIndex != -1) {
+    if (lastIndex !== -1) {
         return name.substring(0, lastIndex);
     } else {
         return name;
     }
-};
-
-var formatDetails = function (serverNameFormatter, yAxisFormatter) {
-    return function (series, x, y) {
-        var date = "<span class='date'>" + formatDate(x) + "</span>";
-        if (series.name === "__STUB") return date;
-
-        var swatch = "<span class='server-indicator' style='background-color: " + series.color + "'></span>&nbsp;";
-        var content = swatch + serverNameFormatter(series.name) + ": " + yAxisFormatter(y) + "<br>" + date;
-        return content;
-    };
 };
 
 // MODEL
@@ -196,38 +178,25 @@ var updater = function (cpuGraph, memGraph, updateUrl) {
             var newServerViews = [];
 
             for (var i = 0; i < data.length; i++) {
-
                 var current = data[i];
+                var name = current.name;
 
-                cpuGraph.appendData(current.timestamp, current.name, current.cpuUsagePercentage);
-                memGraph.appendData(current.timestamp, current.name, current.workingMemorySet);
+                cpuGraph.appendData(current.timestamp, name, current.cpuUsagePercentage);
+                memGraph.appendData(current.timestamp, name, current.workingMemorySet);
+
+                var server = addOrUpdateServerView(name, current);
+                var serverColor = colorGenerator.getColor(name);
+                server.displayColor(serverColor);
+                newServerViews.push(server);
             }
 
             cpuGraph.update();
             memGraph.update();
 
-            for (var i = 0; i < data.length; i++) {
-
-                var current = data[i];
-                var name = current.name;
-
-                var server = addOrUpdateServerView(name, current);
-                server.displayColor(getColor(name, cpuGraph));
-                newServerViews.push(server);
-            }
-
-            viewModel.serverList.remove(function (item) {
-                var found = false;
-                for (var i = 0; i < newServerViews.length; i++) {
-                    if (item.name === newServerViews[i].name) {
-                        found = true;
-                    }
-                }
-                return !found;
-            });
-
+            viewModel.serverList(newServerViews);
             viewModel.serverList.orderField(viewModel.serverList.orderField());
-        });
+        })
+        .fail(function () { viewModel.serverList([]); });
 };
 
 var addOrUpdateServerView = function (name, current) {
@@ -260,13 +229,6 @@ var addOrUpdateServerView = function (name, current) {
     }
 
     return server;
-};
-
-var getColor = function (name, graphSeries) {
-    var series = ko.utils.arrayFirst(graphSeries._chart.data.datasets,
-        function (s) { return s.id === name; });
-
-    return series != null ? series.borderColor : "transparent";
 };
 
 // INITIALIZATION
