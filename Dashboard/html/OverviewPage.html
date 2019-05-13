@@ -18,9 +18,9 @@
 <div class="row">
     <div class="col-md-12" style="margin-top: 30px">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-text">
                 <colgroup>
-                    <col width="16px" />
+                    <col width="24px" />
                     <col width="50%" />
                     <col />
                     <col />
@@ -29,7 +29,7 @@
 
                 <thead>
                     <tr>
-                        <th class="text-center">PID</th>
+                        <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Click to toggle data series">PID</span></th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'displayName', defaultField: true, defaultDirection: 'asc'}">Server</a></th>
                         <th>Exec name</th>
                         <th><a class="sortable-header" href="#" data-bind="orderable: {collection: 'serverList', field: 'cpuUsageRawValue'}">CPU</a></th>

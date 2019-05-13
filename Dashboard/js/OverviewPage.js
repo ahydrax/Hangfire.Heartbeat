@@ -114,30 +114,40 @@ function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
                 tooltips: {
                     position: "nearest",
                     mode: "index",
-                    intersect: false
+                    intersect: false,
+                    callbacks: {
+                        label: function (tooltipItem, data) {
+                            var label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += tickFormat(tooltipItem.yLabel);
+                            return label;
+                        }
+                    }
                 }
             }
         });
 
-    self.appendData = function (timestamp, name, data) {
+    self.appendData = function (timestamp, id, label, data) {
         var now = new Date(timestamp * 1000);
 
         var server = ko.utils.arrayFirst(self._chart.data.datasets,
-            function (s) { return s.id === name; });
+            function (s) { return s.id === id; });
 
         if (server == null) {
-            var seriesColor = self._colorGenerator.getColor(name);
+            var seriesColor = self._colorGenerator.getColor(id);
             server = {
-                id: name,
-                label: getServerShortName(name),
+                id: id,
+                label: label,
                 borderColor: seriesColor,
-                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.2).rgbString(),
+                backgroundColor: Chart.helpers.color(seriesColor).alpha(0.3).rgbString(),
                 fill: "origin",
                 hidden: false,
                 data: []
             };
             self._chart.data.datasets.push(server);
-            server.data.push({ x: now - 1, y: 0 });
             self._seriesIndex++;
         }
 
@@ -156,15 +166,6 @@ var formatPercentage = function (value, index, values) {
 
 var formatBytes = function (value, index, values) {
     return numeral(value).format("0.[00] b");
-};
-
-var getServerShortName = function (name) {
-    var lastIndex = name.lastIndexOf(":");
-    if (lastIndex !== -1) {
-        return name.substring(0, lastIndex);
-    } else {
-        return name;
-    }
 };
 
 // MODEL
@@ -234,12 +235,9 @@ var updater = function (viewModel, cpuGraph, memGraph, updateUrl) {
 
             for (var i = 0; i < data.length; i++) {
                 var current = data[i];
-                var name = current.name;
-
-                cpuGraph.appendData(current.timestamp, name, current.cpuUsagePercentage);
-                memGraph.appendData(current.timestamp, name, current.workingMemorySet);
-
-                var server = viewModel.getServerView(name, current);
+                var server = viewModel.getServerView(current.name, current);
+                cpuGraph.appendData(current.timestamp, server.name, server.displayName(), current.cpuUsagePercentage);
+                memGraph.appendData(current.timestamp, server.name, server.displayName(), current.workingMemorySet);
                 newServerViews.push(server);
             }
 

@@ -4,14 +4,16 @@
     <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <OutputType>Library</OutputType>
     <PackageId>Hangfire.Heartbeat</PackageId>
+    <Title>Hangfire.Heartbeat</Title>
     <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
-    <PackageLicense>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicense>
-    <Version>0.4.0</Version>
-    <NeutralLanguage>en-US</NeutralLanguage>
+    <projectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</projectUrl>
+    <licenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</licenseUrl>
+    <Version>0.4.1</Version>
     <Authors>Viktor Svyatokha (ahydrax)</Authors>
-    <Description>Server monitoring plugin for Hangfire.</Description>
-    <PackageTags>Hangfire;monitoring;heartbeat</PackageTags>
+    <summary>Server monitoring plugin for Hangfire.</summary>
+    <description>Server monitoring plugin for Hangfire.</description>
+    <tags>Hangfire;monitoring;heartbeat</tags>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>

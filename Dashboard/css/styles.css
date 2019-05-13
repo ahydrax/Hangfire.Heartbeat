@@ -23,31 +23,33 @@
 }
 
 .asc:after {
-    content: ' ▼';
+    content: ' \e155';
+    position: relative;
+    top: 2px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
 }
 
 .desc:after {
-    content: ' ▲';
+    content: ' \e156';
+    position: relative;
+    top: 2px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
 }
 
 .min-width {
     width: 16px;
 }
 
-g .area {
-    fill-opacity: 0.5;
-    stroke-width: 3px;
-}
-
-.rickshaw_graph .detail .x_label {
-    display: none
-}
-
-.rickshaw_graph .detail .item {
-    line-height: 1.4;
-    padding: 0.5em
-}
-
-.rickshaw_graph .detail .date {
-    color: #a0a0a0
+.table-text {
+    font-size: 12pt;
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
@@ -52,7 +53,19 @@ namespace Hangfire.Heartbeat.Dashboard
 
         private static string FormatServerName(string name)
         {
-            var lastIndex = name.LastIndexOf(':');
+            var lastIndex = name.Length - 1;
+            var occurrences = 0;
+
+            for (var i = name.Length - 1; i > 0; i--)
+            {
+                if (name[i] == ':') occurrences++;
+                if (occurrences == 2)
+                {
+                    lastIndex = i;
+                    break;
+                }
+            }
+
             return lastIndex > 0 ? name.Substring(0, lastIndex) : name;
         }
 
