@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
@@ -10,7 +11,7 @@ using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
 namespace Hangfire.Heartbeat.Server
 {
     [PublicAPI]
-    public sealed class SystemMonitor : IBackgroundProcess
+    public sealed class ProcessMonitor : IBackgroundProcess
     {
         private readonly Process _currentProcess;
         private readonly TimeSpan _checkInterval;
@@ -18,18 +19,29 @@ namespace Hangfire.Heartbeat.Server
         private readonly TimeSpan _expireIn;
         private (TimeSpan? current, TimeSpan? next) _processorTimeUsage;
 
-        public SystemMonitor(TimeSpan checkInterval)
+        [PublicAPI]
+        public static IBackgroundProcess[] Create(TimeSpan checkInterval)
+            => new IBackgroundProcess[] { new ProcessMonitor(checkInterval) };
+
+        public ProcessMonitor(TimeSpan checkInterval) : this(checkInterval,
+            Process.GetCurrentProcess())
+        {
+
+        }
+
+        public ProcessMonitor(TimeSpan checkInterval, Process processToMonitor)
         {
             if (checkInterval == TimeSpan.Zero) throw new ArgumentException("Check interval must be nonzero value.", nameof(checkInterval));
             if (checkInterval != checkInterval.Duration()) throw new ArgumentException("Check interval must be positive value.", nameof(checkInterval));
             _checkInterval = checkInterval;
 
-            _currentProcess = Process.GetCurrentProcess();
+            _currentProcess = processToMonitor;
             _expireIn = _checkInterval + TimeSpan.FromMinutes(1);
             _processorCount = Environment.ProcessorCount;
             _processorTimeUsage = default;
         }
 
+        /// <inheritdoc/>
         public void Execute(BackgroundProcessContext context)
         {
             if (context.IsStopping)
@@ -58,14 +70,18 @@ namespace Hangfire.Heartbeat.Server
             using (var writeTransaction = connection.CreateWriteTransaction())
             {
                 var key = Utils.FormatKey(context.ServerId);
+                var data = new ProcessInfo
+                {
+                    Id = _currentProcess.Id,
+                    ProcessName = _currentProcess.ProcessName,
+                    CpuUsage = cpuPercentUsage,
+                    WorkingSet = _currentProcess.WorkingSet64,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
 
                 var values = new Dictionary<string, string>
                 {
-                    [ProcessId] = _currentProcess.Id.ToString(CultureInfo.InvariantCulture),
-                    [ProcessName] = _currentProcess.ProcessName,
-                    [CpuUsage] = cpuPercentUsage.ToString(CultureInfo.InvariantCulture),
-                    [WorkingSet] = _currentProcess.WorkingSet64.ToString(CultureInfo.InvariantCulture),
-                    [Timestamp] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+                    [_currentProcess.ProcessName] = SerializationHelper.Serialize(data)
                 };
 
                 writeTransaction.SetRangeInHash(key, values);

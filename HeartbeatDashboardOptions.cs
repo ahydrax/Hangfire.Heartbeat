@@ -2,12 +2,21 @@
 
 namespace Hangfire.Heartbeat
 {
-    public sealed class HeartbeatOptions
+    /// <summary>
+    /// Contains initialization options for Hangfire Dashboard UI.
+    /// </summary>
+    public sealed class HeartbeatDashboardOptions
     {
-        public bool ShowServerFullNameInDetails { get; set; }
+        /// <summary>
+        /// Status polling interval.
+        /// </summary>
         public TimeSpan CheckInterval { get; }
 
-        public HeartbeatOptions(TimeSpan checkInterval)
+        /// <summary>
+        /// Creates new options.
+        /// </summary>
+        /// <param name="checkInterval">Status polling interval.</param>
+        public HeartbeatDashboardOptions(TimeSpan checkInterval)
         {
             if (checkInterval == TimeSpan.Zero) throw new ArgumentException("Check interval must be nonzero value.", nameof(checkInterval));
             if (checkInterval != checkInterval.Duration()) throw new ArgumentException("Check interval must be positive value.", nameof(checkInterval));

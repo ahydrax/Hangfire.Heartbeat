@@ -131,7 +131,7 @@ function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
         });
 
     self.appendData = function (timestamp, id, label, data) {
-        var now = new Date(timestamp * 1000);
+        var now = new Date(timestamp);
 
         var server = ko.utils.arrayFirst(self._chart.data.datasets,
             function (s) { return s.id === id; });
@@ -225,6 +225,14 @@ var UtilizationViewModel = function (cpuGraph, memGraph, colorGenerator) {
 
         return server;
     };
+
+    self.clear = function () {
+        self.serverList([]);
+        self._cpuGraph._chart.data.datasets = [];
+        self._cpuGraph.update();
+        self._memGraph._chart.data.datasets = [];
+        self._memGraph.update();
+    }
 }
 
 // UPDATER
@@ -247,7 +255,7 @@ var updater = function (viewModel, cpuGraph, memGraph, updateUrl) {
             viewModel.serverList(newServerViews);
             viewModel.serverList.orderField(viewModel.serverList.orderField());
         })
-        .fail(function () { viewModel.serverList([]); });
+        .fail(function () { viewModel.clear() });
 };
 
 // INITIALIZATION

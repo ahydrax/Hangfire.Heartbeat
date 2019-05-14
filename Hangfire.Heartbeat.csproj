@@ -3,20 +3,36 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <PackageId>Hangfire.Heartbeat</PackageId>
-    <Title>Hangfire.Heartbeat</Title>
-    <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
-    <projectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</projectUrl>
-    <licenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</licenseUrl>
-    <Version>0.4.1</Version>
-    <Authors>Viktor Svyatokha (ahydrax)</Authors>
-    <summary>Server monitoring plugin for Hangfire.</summary>
-    <description>Server monitoring plugin for Hangfire.</description>
-    <tags>Hangfire;monitoring;heartbeat</tags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <LangVersion>7.2</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.4.1</Version>
+    <PackageId>Hangfire.Heartbeat</PackageId>
+    <AssemblyTitle>Hangfire.Heartbeat</AssemblyTitle>
+    <Product>Hangfire.Heartbeat</Product>
+    <Company>ahydrax</Company>
+    <Copyright>Copyright © 2018-present Hangfire.Heartbeat contributors</Copyright>
+    <Description>Server monitoring plugin for Hangfire.</Description>
+    <Authors>ahydrax</Authors>
+    <PackageDescription>Server monitoring plugin for Hangfire.</PackageDescription>
+    <PackageReleaseNotes>https://github.com/ahydrax/Hangfire.Heartbeat/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Heartbeat</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Heartbeat/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>Hangfire;monitoring;heartbeat</PackageTags>
+    <PackageLanguage>en-US</PackageLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HangFire.Core" Version="1.7.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net462'">
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Dashboard\css\styles.css" />
@@ -35,10 +51,4 @@
     <EmbeddedResource Include="Dashboard\js\numeral.min.js" />
     <EmbeddedResource Include="Dashboard\js\OverviewPage.js" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="HangFire.Core" Version="1.7.2" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-
 </Project>

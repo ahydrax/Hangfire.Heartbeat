@@ -16,12 +16,12 @@ Then add this in your code:
 
 for service side:
 ```csharp
-app.UseHangfireServer(additionalProcesses: new[] { new SystemMonitor(checkInterval: Timespan.FromSeconds(1)) });
+app.UseHangfireServer(additionalProcesses: new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) });
 ```
 
 for dashboard:
 ```csharp
-services.AddHangfire(configuration => configuration.UseHeartbeatPage(checkInterval: Timespan.FromSeconds(1)));
+services.AddHangfire(configuration => configuration.UseHeartbeatPage(checkInterval: TimeSpan.FromSeconds(1)));
 ```
 It's not recommended to specify `checkInterval` less than 1 second as it can cause additional load on db server. Also I recommend to use the same interval as for server and dashboard. 
 
