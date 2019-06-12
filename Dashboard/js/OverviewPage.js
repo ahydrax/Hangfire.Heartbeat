@@ -72,9 +72,7 @@ function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
     self._chart = new Chart(element,
         {
             type: "line",
-            data: {
-                datasets: []
-            },
+            data: { datasets: [] },
             options: {
                 aspectRatio: 1,
                 scales: {
@@ -117,11 +115,8 @@ function SeriesGraph(element, tickFormat, colorGenerator, pollInterval) {
                     intersect: false,
                     callbacks: {
                         label: function (tooltipItem, data) {
-                            var label = data.datasets[tooltipItem.datasetIndex].label || '';
-
-                            if (label) {
-                                label += ': ';
-                            }
+                            var label = data.datasets[tooltipItem.datasetIndex].label;
+                            label += ': ';
                             label += tickFormat(tooltipItem.yLabel);
                             return label;
                         }
