@@ -39,7 +39,7 @@ namespace Hangfire.Heartbeat.Dashboard
 
                         serverUtilizationViews.Add(new ServerView
                         {
-                            Name = serverDto.Name + ":" + processInfo.ProcessName,
+                            Name = $"{serverDto.Name}:{processInfo.Id}",
                             DisplayName = serverDto.Name,
                             ProcessName = processInfo.ProcessName,
                             Timestamp = processInfo.Timestamp.ToUnixTimeMilliseconds(),
