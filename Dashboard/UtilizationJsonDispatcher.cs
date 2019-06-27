@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Hangfire.Common;
 using Hangfire.Dashboard;
+using Hangfire.Heartbeat.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
 
 namespace Hangfire.Heartbeat.Dashboard
 {
@@ -30,19 +30,22 @@ namespace Hangfire.Heartbeat.Dashboard
                     var hash = connection.GetAllEntriesFromHash(key);
 
                     if (hash == null) continue;
-                    if (hash.Count < 5) continue;
 
-                    var view = new ServerView
+                    foreach (var hashValue in hash)
                     {
-                        DisplayName = FormatServerName(serverDto.Name),
-                        Name = serverDto.Name,
-                        ProcessId = hash[ProcessId],
-                        ProcessName = hash[ProcessName],
-                        CpuUsagePercentage = ParseDouble(hash[CpuUsage]),
-                        WorkingMemorySet = ParseLong(hash[WorkingSet]),
-                        Timestamp = ParseLong(hash[Timestamp])
-                    };
-                    serverUtilizationViews.Add(view);
+                        var processInfo = SerializationHelper.Deserialize<ProcessInfo>(hashValue.Value);
+
+                        serverUtilizationViews.Add(new ServerView
+                        {
+                            Name = $"{serverDto.Name}:{processInfo.Id}",
+                            DisplayName = serverDto.Name,
+                            ProcessName = processInfo.ProcessName,
+                            Timestamp = processInfo.Timestamp.ToUnixTimeMilliseconds(),
+                            ProcessId = processInfo.Id.ToString(CultureInfo.InvariantCulture),
+                            CpuUsagePercentage = processInfo.CpuUsage,
+                            WorkingMemorySet = processInfo.WorkingSet
+                        });
+                    }
                 }
             }
 
