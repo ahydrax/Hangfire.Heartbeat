@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hangfire.Common;
@@ -8,7 +7,6 @@ using Hangfire.Heartbeat.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using static Hangfire.Heartbeat.Model.ProcessInformationConstants;
 
 namespace Hangfire.Heartbeat.Dashboard
 {
