@@ -16,7 +16,7 @@ Then add this in your code:
 
 for service side:
 ```csharp
-app.UseHangfireServer(additionalProcesses: new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) });
+app.UseHangfireServer(additionalProcesses: new[] { new ProcessMonitor(checkInterval: TimeSpan.FromSeconds(1)) });
 ```
 
 for dashboard:
