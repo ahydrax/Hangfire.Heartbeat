@@ -4,7 +4,7 @@
 
 ![dashboard](content/dashboard.png)
 
-A simple server monitoring plugin for Hangfire.
+Hangfire.Heartbeat is a simple server monitoring plugin for Hangfire.  It can easily be used to monitor CPU and RAM usage of the process that is running hangfire jobs, and optionally can monitor additional processes as well.
 
 Read about hangfire here: https://github.com/HangfireIO/Hangfire#hangfire-
 and here: http://hangfire.io/
