@@ -1,10 +1,10 @@
 # Hangfire.Heartbeat
 [![NuGet](https://img.shields.io/nuget/v/Hangfire.Heartbeat.svg)](https://www.nuget.org/packages/Hangfire.Heartbeat/)
-[![Build status](https://ci.appveyor.com/api/projects/status/0w31nywe7fs5s2hl?svg=true)](https://ci.appveyor.com/project/ahydrax/hangfire-heartbeat)
+[![Tests](https://github.com/ahydrax/Hangfire.Heartbeat/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/ahydrax/Hangfire.Heartbeat/actions/workflows/build-and-test.yml)
+
+A process monitoring plugin for Hangfire. Multiple processes are supported.
 
 ![dashboard](content/dashboard.png)
-
-A simple server monitoring plugin for Hangfire.
 
 Read about hangfire here: https://github.com/HangfireIO/Hangfire#hangfire-
 and here: http://hangfire.io/
