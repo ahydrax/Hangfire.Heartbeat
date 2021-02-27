@@ -26,7 +26,7 @@ namespace Hangfire.Heartbeat.TestApplication
         {
             services.AddHangfire(configuration =>
                 configuration
-                    .UseRedisStorage("192.168.5.32:6379")
+                    .UseRedisStorage(Environment.GetEnvironmentVariable("REDIS"))
                     .UseHeartbeatPage(TimeSpan.FromMilliseconds(500)));
         }
 
