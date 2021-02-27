@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Heartbeat", "src\H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Heartbeat.TestApplication", "tests\Hangfire.Heartbeat.TestApplication\Hangfire.Heartbeat.TestApplication.csproj", "{F02D7907-38A0-4020-9D20-E03E9523B9A5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{9DD375E1-9F69-4B56-AADD-A10A677CA959}"
+ProjectSection(SolutionItems) = preProject
+	.github\workflows\build-and-publish-nuget.yml = .github\workflows\build-and-publish-nuget.yml
+	.github\workflows\build-and-test.yml = .github\workflows\build-and-test.yml
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

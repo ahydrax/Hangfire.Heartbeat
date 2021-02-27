@@ -30,7 +30,7 @@ namespace Hangfire.Heartbeat.TestApplication
                     .UseHeartbeatPage(TimeSpan.FromMilliseconds(500)));
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
 
