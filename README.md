@@ -1,5 +1,6 @@
 # Hangfire.Heartbeat
-[![NuGet](https://img.shields.io/nuget/v/Hangfire.Heartbeat.svg)](https://www.nuget.org/packages/Hangfire.Heartbeat/)
+[![NuGet](https://img.shields.io/nuget/vpre/Hangfire.Heartbeat)](https://www.nuget.org/packages/Hangfire.Heartbeat/)
+[![NuGet](https://img.shields.io/nuget/dt/Hangfire.Heartbeat)](https://www.nuget.org/packages/Hangfire.Heartbeat/)
 [![Tests](https://github.com/ahydrax/Hangfire.Heartbeat/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/ahydrax/Hangfire.Heartbeat/actions/workflows/build-and-test.yml)
 
 A CPU/RAM usage monitoring plugin for Hangfire. Multiple processes are supported.
