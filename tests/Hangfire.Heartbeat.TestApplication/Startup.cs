@@ -24,15 +24,12 @@ namespace Hangfire.Heartbeat.TestApplication
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var storage = new RedisStorage("localhost:6379");
+
             services.AddHangfire(configuration =>
                 configuration
-                    .UseRedisStorage(Environment.GetEnvironmentVariable("REDIS"))
+                    .UseStorage(storage)
                     .UseHeartbeatPage(TimeSpan.FromMilliseconds(500)));
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            app.UseDeveloperExceptionPage();
 
             var random = new Random();
             var serverName = "Test server #" + random.Next(1, 1000);
@@ -42,20 +39,24 @@ namespace Hangfire.Heartbeat.TestApplication
                 .Append(new ProcessMonitor(randomCheckInterval))
                 .ToArray();
 
-            app.UseHangfireServer(new BackgroundJobServerOptions
+            services.AddHangfireServer((sp, options) =>
             {
-                ServerName = serverName,
-                ServerCheckInterval = TimeSpan.FromSeconds(5),
-                ServerTimeout = TimeSpan.FromSeconds(15),
-                HeartbeatInterval = TimeSpan.FromSeconds(3),
-                WorkerCount = 1
-            }, monitors);
+                options.ServerName = serverName;
+                options.ServerCheckInterval = TimeSpan.FromSeconds(5);
+                options.ServerTimeout = TimeSpan.FromSeconds(15);
+                options.HeartbeatInterval = TimeSpan.FromSeconds(3);
+                options.WorkerCount = 1;
+            }, storage, monitors);
+        }
 
-            app.UseHangfireDashboard("", new DashboardOptions { Authorization = new IDashboardAuthorizationFilter[0] });
-            RecurringJob.AddOrUpdate(() => Alloc(), Cron.Daily(), TimeZoneInfo.Utc);
-            RecurringJob.AddOrUpdate(() => CpuKill(75), Cron.Daily(), TimeZoneInfo.Utc);
-            RecurringJob.AddOrUpdate(() => GC.Collect(2), Cron.Daily(), TimeZoneInfo.Utc);
-            RecurringJob.AddOrUpdate(() => AggregateTest(), Cron.Daily(), TimeZoneInfo.Utc);
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseHangfireDashboard("", new DashboardOptions { Authorization = Array.Empty<IDashboardAuthorizationFilter>() });
+            RecurringJob.AddOrUpdate(nameof(Alloc), () => Alloc(), Cron.Daily());
+            RecurringJob.AddOrUpdate(nameof(CpuKill), () => CpuKill(75), Cron.Daily());
+            RecurringJob.AddOrUpdate(nameof(GC.Collect), () => GC.Collect(2), Cron.Daily());
+            RecurringJob.AddOrUpdate(nameof(AggregateTest), () => AggregateTest(), Cron.Daily());
         }
 
         public void AggregateTest()
@@ -92,7 +93,7 @@ namespace Hangfire.Heartbeat.TestApplication
                 x[0].A = 1;
                 x[0].B = 1;
                 x[0].C = 1;
-                x[x.Length - 1].A = 2;
+                x[^1].A = 2;
                 if (w1.Elapsed > TimeSpan.FromSeconds(15))
                 {
                     break;
