@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Hangfire.Dashboard;
 using Hangfire.Heartbeat.Server;
 using Hangfire.Redis;
+using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
